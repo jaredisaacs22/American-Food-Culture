@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>American Food Culture</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Lato:wght@400&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Lato', sans-serif;
+      background-color: #FAF8F5;
+      color: #002F6C;
+    }
+    header {
+      background-color: #002F6C;
+      padding: 1rem 2rem;
+      color: white;
+      text-align: center;
+    }
+    header h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2.5rem;
+      margin: 0;
+    }
+    .section {
+      padding: 2rem;
+      max-width: 900px;
+      margin: auto;
+    }
+    .section h2 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2rem;
+      color: #D72638;
+    }
+    .brand-colors, .typography {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .color-box {
+      width: 150px;
+      padding: 1rem;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+    }
+    .Patriotic-Navy { background-color: #002F6C; }
+    .Bold-Red { background-color: #D72638; }
+    .White { background-color: #FFFFFF; color: #002F6C; border: 1px solid #ccc; }
+    .Soft-Cream { background-color: #FAF8F5; color: #002F6C; border: 1px solid #ccc; }
+    footer {
+      background-color: #002F6C;
+      color: white;
+      text-align: center;
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>American Food Culture</h1>
+    <p>The Story Behind Every Bite</p>
+  </header>
+
+  <section class="section">
+    <h2>Our Story</h2>
+    <p>
+      We started <strong>American Food Culture</strong> because we were tired of hearing the same thing over and over:
+      "America doesn’t have a real food culture." But the truth? That couldn’t be further from reality.
+    </p>
+    <p>
+      American food may not always be refined, but it’s absolutely rich — in stories, history, and influence.
+      From ballpark hot dogs to immigrant fusion dishes, food in America reflects struggle, invention, joy,
+      rebellion, and identity.
+    </p>
+    <p>
+      We created this platform to:
+      <ul>
+        <li>🍔 Pay tribute to the foods that shaped our childhoods and communities</li>
+        <li>📚 Uncover the wild stories behind iconic dishes</li>
+        <li>🎡 Remind people our “guilty pleasures” are cultural artifacts</li>
+        <li>🇺🇸 Reframe how the world sees American food — not as a punchline, but a legacy</li>
+      </ul>
+    </p>
+  </section>
+
+  <section class="section">
+    <h2>Brand Identity</h2>
+    <h3>Colors</h3>
+    <div class="brand-colors">
+      <div class="color-box Patriotic-Navy">Patriotic Navy<br>#002F6C</div>
+      <div class="color-box Bold-Red">Bold Red<br>#D72638</div>
+      <div class="color-box White">White<br>#FFFFFF</div>
+      <div class="color-box Soft-Cream">Soft Cream<br>#FAF8F5</div>
+    </div>
+
+    <h3 style="margin-top:2rem">Typography</h3>
+    <div class="typography">
+      <div>
+        <strong>Montserrat Bold</strong><br>
+        All caps, sans-serif<br>
+        <p style="font-family: 'Montserrat', sans-serif; font-weight:700;">AMERICAN FOOD CULTURE</p>
+      </div>
+      <div>
+        <strong>Lato Regular</strong><br>
+        Clean sans-serif<br>
+        <p style="font-family: 'Lato', sans-serif;">The quick brown fox jumps over the lazy dog.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 American Food Culture. All Rights Reserved.</p>
+  </footer>
+</body>
+</html>

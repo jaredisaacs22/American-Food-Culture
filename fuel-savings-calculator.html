@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fuel Savings Calculator — Generator + BESS Hybrid | Sunbelt Rentals</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Sunbelt Rentals brand palette */
+    :root {
+      --green:      #008544;
+      --green-dark: #006835;
+      --orange:     #F47920;
+      --orange-dark:#d96810;
+      --gold:       #FED203;
+      --white:      #FFFFFF;
+      --light-gray: #F5F5F5;
+      --mid-gray:   #E0E0E0;
+      --dark-gray:  #333333;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lato', sans-serif;
+      background-color: var(--light-gray);
+      color: var(--dark-gray);
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    header {
+      background-color: var(--green);
+      color: var(--white);
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .logo-mark {
+      width: 48px; height: 48px;
+      background-color: var(--gold);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    header h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    header p { font-size: 0.85rem; opacity: 0.9; margin-top: 0.15rem; }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1.25rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+
+    /* ── Card ── */
+    .card {
+      background: var(--white);
+      border-radius: 8px;
+      padding: 1.5rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .card h2 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 3px solid var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Form controls ── */
+    .form-group { margin-bottom: 1rem; }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--dark-gray);
+      margin-bottom: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    label .unit { font-weight: 400; text-transform: none; color: #666; }
+
+    select, input[type="number"] {
+      width: 100%;
+      padding: 0.5rem 0.7rem;
+      border: 1.5px solid var(--mid-gray);
+      border-radius: 4px;
+      font-size: 0.93rem;
+      font-family: 'Lato', sans-serif;
+      background: var(--white);
+      color: var(--dark-gray);
+      transition: border-color 0.2s;
+    }
+    select:focus, input[type="number"]:focus {
+      border-color: var(--green);
+      outline: none;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      cursor: pointer;
+      accent-color: var(--orange);
+      margin-top: 0.2rem;
+    }
+    .range-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--orange);
+      text-align: center;
+      margin-top: 0.15rem;
+    }
+    .range-display {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.73rem;
+      color: #888;
+      margin-top: 0.15rem;
+    }
+
+    .hint {
+      font-size: 0.74rem;
+      color: #888;
+      margin-top: 0.25rem;
+    }
+    .spec-box {
+      font-size: 0.78rem;
+      color: #555;
+      margin-top: 0.45rem;
+      padding: 0.6rem 0.75rem;
+      background: var(--light-gray);
+      border-radius: 4px;
+      line-height: 1.5;
+    }
+    .spec-box strong { color: var(--green); }
+
+    .badge {
+      display: inline-block;
+      background: var(--green);
+      color: white;
+      font-size: 0.65rem;
+      padding: 0.1rem 0.35rem;
+      border-radius: 3px;
+      font-weight: 700;
+      margin-left: 0.3rem;
+      vertical-align: middle;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .btn-calc {
+      display: block;
+      width: 100%;
+      padding: 0.9rem;
+      background-color: var(--orange);
+      color: var(--white);
+      border: none;
+      border-radius: 6px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: background-color 0.2s;
+      margin-top: 1.25rem;
+    }
+    .btn-calc:hover { background-color: var(--orange-dark); }
+    .btn-calc:active { transform: scale(0.99); }
+
+    /* ── Results ── */
+    #results { display: none; grid-column: 1 / -1; }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media (max-width: 760px) { .results-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .metric-box {
+      border-radius: 6px;
+      padding: 1rem;
+      text-align: center;
+      border-left: 4px solid var(--mid-gray);
+      background: var(--light-gray);
+    }
+    .metric-box.m-fuel  { border-left-color: var(--green);  background: #e8f5ee; }
+    .metric-box.m-cost  { border-left-color: var(--orange); background: #fff4ec; }
+    .metric-box.m-pct   { border-left-color: var(--green);  background: #e8f5ee; }
+    .metric-box.m-net   { border-left-color: var(--gold);   background: #fffae6; }
+
+    .metric-box .value {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--dark-gray);
+    }
+    .metric-box .mlabel {
+      font-size: 0.72rem;
+      color: #666;
+      margin-top: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Fuel bar chart ── */
+    .chart-area { margin-bottom: 1.5rem; }
+    .chart-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #555;
+      margin-bottom: 0.6rem;
+    }
+    .bar-row { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+    .bar-lbl  { font-size: 0.78rem; font-weight: 700; width: 110px; flex-shrink: 0; }
+    .bar-track {
+      flex: 1;
+      background: var(--mid-gray);
+      border-radius: 4px;
+      height: 22px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      display: flex; align-items: center; padding-left: 0.5rem;
+      font-size: 0.72rem; color: white; font-weight: 700;
+      transition: width 0.6s ease;
+      white-space: nowrap;
+    }
+    .bar-fill.b-gen    { background: #888; }
+    .bar-fill.b-hybrid { background: var(--green); }
+    .bar-val { font-size: 0.78rem; font-weight: 700; width: 80px; text-align: right; flex-shrink: 0; }
+
+    /* ── Comparison table ── */
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+    .comparison-table th {
+      padding: 0.65rem 1rem;
+      text-align: left;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .comparison-table th:first-child { background: #555; color: white; }
+    .comparison-table th:nth-child(2) { background: #777; color: white; }
+    .comparison-table th:nth-child(3) { background: var(--green-dark); color: white; }
+
+    .comparison-table td {
+      padding: 0.55rem 1rem;
+      border-bottom: 1px solid var(--mid-gray);
+    }
+    .comparison-table tr:nth-child(even) td { background: #fafafa; }
+    .comparison-table tr.row-total td {
+      font-weight: 700;
+      background: #e8f5ee !important;
+      color: var(--green-dark);
+      font-size: 0.95rem;
+    }
+
+    .disclaimer {
+      font-size: 0.73rem;
+      color: #888;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--mid-gray);
+      line-height: 1.6;
+    }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--green);
+      color: white;
+      text-align: center;
+      padding: 1rem;
+      margin-top: 2rem;
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">⚡</div>
+  <div>
+    <h1>Fuel Savings Calculator</h1>
+    <p>Generator + Battery Energy Storage (BESS) Hybrid &mdash; Powered by Sunbelt Rentals</p>
+  </div>
+</header>
+
+<div class="container">
+  <div class="grid">
+
+    <!-- ── Left card: Generator ── -->
+    <div class="card">
+      <h2>Generator Selection</h2>
+
+      <div class="form-group">
+        <label>Generator Model <span class="badge">Sunbelt Rental</span></label>
+        <select id="genModel" onchange="updateGenSpecs()">
+          <option value="dca220">Multiquip DCA220SSJU4F2 — 176 kW prime / 220 kVA (Tier 4 Final)</option>
+          <option value="dca300">Multiquip DCA300SSJU4F3 — 240 kW prime / 300 kVA (Tier 4 Final)</option>
+        </select>
+        <div class="spec-box" id="genSpecs"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Average Load <span class="unit">(%)</span></label>
+        <input type="range" id="loadPct" min="10" max="100" step="5" value="50"
+               oninput="updateLoadDisplay()">
+        <div class="range-value" id="loadDisplay">50%</div>
+        <div class="range-display">
+          <span>10% light</span><span>&#9650; 75% optimal</span><span>100% full</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Operating Hours per Day <span class="unit">(hrs)</span></label>
+        <input type="number" id="hoursDay" value="16" min="1" max="24" step="0.5">
+      </div>
+
+      <div class="form-group">
+        <label>Project Duration <span class="unit">(days)</span></label>
+        <input type="number" id="projectDays" value="30" min="1" max="365">
+      </div>
+    </div>
+
+    <!-- ── Right card: Costs & BESS ── -->
+    <div class="card">
+      <h2>Cost &amp; BESS Configuration</h2>
+
+      <div class="form-group">
+        <label>Diesel Price <span class="unit">($/gallon)</span></label>
+        <input type="number" id="dieselPrice" value="4.50" min="1" max="15" step="0.05">
+      </div>
+
+      <div class="form-group">
+        <label>BESS Unit <span class="badge">Atlas Copco</span></label>
+        <select id="bessModel">
+          <option value="zbc250">ZenergiZe ZBC 250-575 — 250 kW / 575 kWh (LiFePO₄)</option>
+        </select>
+        <div class="spec-box">
+          <strong>Atlas Copco ZBC 250-575:</strong> 250 kW rated output &bull;
+          575 kWh total capacity (518 kWh usable) &bull; ~2 hr autonomy at full load &bull;
+          93% round-trip efficiency &bull; UL 1741 SA / UL 9540 certified &bull;
+          10 ft ISO container &bull; 11,000 kg
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>BESS Rental Cost <span class="unit">($/day)</span></label>
+        <input type="number" id="bessRentalDay" value="750" min="0" max="5000" step="50">
+        <div class="hint">Typical range: $500–$1,200/day — contact Sunbelt Rentals for a site quote.</div>
+      </div>
+
+      <div class="form-group">
+        <label>DEF Price <span class="unit">($/gallon)</span></label>
+        <input type="number" id="defPrice" value="3.00" min="0.50" max="10" step="0.10">
+        <div class="hint">DEF consumption ≈ 2% of diesel volume (EPA Tier 4 Final requirement).</div>
+      </div>
+
+      <button class="btn-calc" onclick="calculate()">&#128200; Calculate Fuel Savings</button>
+    </div>
+
+    <!-- ── Results (full width) ── -->
+    <div class="card" id="results">
+      <h2>Results — Fuel &amp; Cost Comparison</h2>
+
+      <!-- Key metrics -->
+      <div class="results-grid">
+        <div class="metric-box m-fuel">
+          <div class="value" id="res-fuelSaved">—</div>
+          <div class="mlabel">Fuel Saved (gal)</div>
+        </div>
+        <div class="metric-box m-cost">
+          <div class="value" id="res-dollarSaved">—</div>
+          <div class="mlabel">Gross Fuel Cost Savings</div>
+        </div>
+        <div class="metric-box m-pct">
+          <div class="value" id="res-savingsPct">—</div>
+          <div class="mlabel">Fuel Reduction (%)</div>
+        </div>
+        <div class="metric-box m-net" id="metricNet">
+          <div class="value" id="res-roi">—</div>
+          <div class="mlabel">Net Savings After BESS Rental</div>
+        </div>
+      </div>
+
+      <!-- Bar chart: total energy cost -->
+      <div class="chart-area">
+        <div class="chart-title">Total Energy Cost over Project Duration</div>
+        <div class="bar-row">
+          <div class="bar-lbl">Generator Only</div>
+          <div class="bar-track">
+            <div class="bar-fill b-gen" id="bar-gen" style="width:100%"></div>
+          </div>
+          <div class="bar-val" id="bar-gen-val">—</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-lbl">Gen + BESS Hybrid</div>
+          <div class="bar-track">
+            <div class="bar-fill b-hybrid" id="bar-hybrid" style="width:50%"></div>
+          </div>
+          <div class="bar-val" id="bar-hybrid-val">—</div>
+        </div>
+      </div>
+
+      <!-- Detail table -->
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Generator Only</th>
+            <th>Generator + BESS Hybrid</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Fuel rate at operating load</td>
+            <td id="t-rateGen">—</td>
+            <td id="t-rateHybrid">—</td>
+          </tr>
+          <tr>
+            <td>Generator run hours / day</td>
+            <td id="t-hrsGen">—</td>
+            <td id="t-hrsHybrid">—</td>
+          </tr>
+          <tr>
+            <td>Fuel consumption / day</td>
+            <td id="t-fuelDayGen">—</td>
+            <td id="t-fuelDayHybrid">—</td>
+          </tr>
+          <tr>
+            <td>DEF consumption / day</td>
+            <td id="t-defDayGen">—</td>
+            <td id="t-defDayHybrid">—</td>
+          </tr>
+          <tr>
+            <td>Total fuel (project)</td>
+            <td id="t-fuelTotGen">—</td>
+            <td id="t-fuelTotHybrid">—</td>
+          </tr>
+          <tr>
+            <td>Total diesel cost</td>
+            <td id="t-fuelCostGen">—</td>
+            <td id="t-fuelCostHybrid">—</td>
+          </tr>
+          <tr>
+            <td>Total DEF cost</td>
+            <td id="t-defCostGen">—</td>
+            <td id="t-defCostHybrid">—</td>
+          </tr>
+          <tr>
+            <td>BESS rental cost</td>
+            <td>—</td>
+            <td id="t-bessTotal">—</td>
+          </tr>
+          <tr class="row-total">
+            <td>Total energy cost</td>
+            <td id="t-totalGen">—</td>
+            <td id="t-totalHybrid">—</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="disclaimer">
+        * <strong>Hybrid model assumptions:</strong> The generator operates at 75% rated load (optimal fuel efficiency point) for
+        fewer hours per day; the Atlas Copco ZBC 250-575 BESS buffers supply/demand differences. Energy balance accounts
+        for 93% BESS round-trip efficiency (LiFePO₄). Generator run hours are capped at the stated daily operating hours
+        if load exceeds the BESS buffering capacity. Fuel consumption rates sourced from Multiquip DCA220SSJU4F2 and
+        DCA300SSJU4F3 factory data sheets. DEF consumption estimated at 2% of diesel volume per EPA Tier 4 Final
+        guidelines. Results are estimates only; actual savings vary with site conditions, load profile, ambient
+        temperature, and equipment configuration. Contact Sunbelt Rentals for a site-specific assessment and current
+        rental pricing.
+      </div>
+    </div><!-- /#results -->
+
+  </div><!-- /.grid -->
+</div><!-- /.container -->
+
+<footer>
+  Sunbelt Rentals &mdash; Generator + BESS Hybrid Fuel Savings Calculator &mdash; For estimation purposes only
+</footer>
+
+<script>
+  /* ── Generator data (from Multiquip factory sheets) ── */
+  const GEN = {
+    dca220: {
+      name:    "Multiquip DCA220SSJU4F2",
+      ratedKW: 176,
+      engine:  "John Deere 6068HFG06",
+      tank:    319,
+      tier:    "EPA Tier 4 Final",
+      /* gph at 25 / 50 / 75 / 100 % load */
+      rates: { 25: 4.6, 50: 6.9, 75: 9.4, 100: 12.0 }
+    },
+    dca300: {
+      name:    "Multiquip DCA300SSJU4F3",
+      ratedKW: 240,
+      engine:  "John Deere 6090HFG06",
+      tank:    430.6,
+      tier:    "EPA Tier 4 Final",
+      rates: { 25: 5.8, 50: 8.9, 75: 12.5, 100: 16.7 }
+    }
+  };
+
+  /* ── BESS data (Atlas Copco ZBC 250-575, 60 Hz / 480 V US spec) ── */
+  const BESS = {
+    zbc250: { powerKW: 250, usableKWh: 518, efficiency: 0.93 }
+  };
+
+  /* Linear interpolation of fuel rate for any load % */
+  function fuelRate(gen, loadPct) {
+    const keys = [25, 50, 75, 100];
+    if (loadPct <= 25) return gen.rates[25] * (loadPct / 25);
+    for (let i = 0; i < keys.length - 1; i++) {
+      const lo = keys[i], hi = keys[i + 1];
+      if (loadPct >= lo && loadPct <= hi) {
+        const t = (loadPct - lo) / (hi - lo);
+        return gen.rates[lo] + t * (gen.rates[hi] - gen.rates[lo]);
+      }
+    }
+    return gen.rates[100];
+  }
+
+  /* Formatting helpers */
+  function fmt(n, d = 0)  { return n.toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }); }
+  function fmtUSD(n)       { return '$' + fmt(n, 0); }
+
+  /* Update generator spec blurb */
+  function updateGenSpecs() {
+    const g = GEN[document.getElementById('genModel').value];
+    document.getElementById('genSpecs').innerHTML =
+      `<strong>${g.name}</strong> &bull; ${g.ratedKW} kW prime &bull; `
+      + `${g.engine} &bull; ${g.tier} &bull; ${g.tank} gal tank`;
+  }
+
+  /* Slider display */
+  function updateLoadDisplay() {
+    document.getElementById('loadDisplay').textContent =
+      document.getElementById('loadPct').value + '%';
+  }
+
+  /* ── Main calculation ── */
+  function calculate() {
+    const gen        = GEN[document.getElementById('genModel').value];
+    const bess       = BESS['zbc250'];
+    const loadPct    = parseFloat(document.getElementById('loadPct').value);
+    const hoursDay   = parseFloat(document.getElementById('hoursDay').value);
+    const projDays   = parseFloat(document.getElementById('projectDays').value);
+    const dPrice     = parseFloat(document.getElementById('dieselPrice').value);
+    const bessDay    = parseFloat(document.getElementById('bessRentalDay').value);
+    const defPrice   = parseFloat(document.getElementById('defPrice').value);
+
+    /* ── Generator-only scenario ── */
+    const rateGen      = fuelRate(gen, loadPct);
+    const fuelDayGen   = rateGen * hoursDay;
+    const defDayGen    = fuelDayGen * 0.02;
+    const fuelTotGen   = fuelDayGen * projDays;
+    const defTotGen    = defDayGen  * projDays;
+    const fuelCostGen  = fuelTotGen * dPrice;
+    const defCostGen   = defTotGen  * defPrice;
+    const totalCostGen = fuelCostGen + defCostGen;
+
+    /* ── Hybrid scenario ── */
+    // Generator runs at 75% load (optimal efficiency); BESS buffers the difference.
+    // Energy needed per day = avg load kW × hours
+    const avgLoadKW        = gen.ratedKW * (loadPct / 100);
+    const energyNeededKWh  = avgLoadKW * hoursDay;
+    const genOptKW         = gen.ratedKW * 0.75;
+    // Generator run hours needed to supply same kWh (accounting for BESS round-trip loss)
+    const runHrsHybridCalc = energyNeededKWh / (genOptKW * bess.efficiency);
+    // Cap at stated daily hours (gen cannot run more than operating window)
+    const runHrsHybrid     = Math.min(runHrsHybridCalc, hoursDay);
+
+    const rateHybrid        = gen.rates[75];            // always 75 % load
+    const fuelDayHybrid     = rateHybrid * runHrsHybrid;
+    const defDayHybrid      = fuelDayHybrid * 0.02;
+    const fuelTotHybrid     = fuelDayHybrid * projDays;
+    const defTotHybrid      = defDayHybrid  * projDays;
+    const fuelCostHybrid    = fuelTotHybrid * dPrice;
+    const defCostHybrid     = defTotHybrid  * defPrice;
+    const bessRentalTotal   = bessDay * projDays;
+    const totalCostHybrid   = fuelCostHybrid + defCostHybrid + bessRentalTotal;
+
+    /* ── Derived KPIs ── */
+    const fuelSaved      = fuelTotGen - fuelTotHybrid;
+    const fuelSavedPct   = (fuelSaved / fuelTotGen) * 100;
+    const grossSavings   = (fuelCostGen + defCostGen) - (fuelCostHybrid + defCostHybrid);
+    const netSavings     = totalCostGen - totalCostHybrid;
+
+    /* ── Populate KPI tiles ── */
+    document.getElementById('res-fuelSaved').textContent  = fmt(fuelSaved) + ' gal';
+    document.getElementById('res-dollarSaved').textContent = fmtUSD(grossSavings);
+    document.getElementById('res-savingsPct').textContent  = fmt(fuelSavedPct, 1) + '%';
+    document.getElementById('res-roi').textContent =
+      netSavings >= 0 ? fmtUSD(netSavings) + ' saved' : fmtUSD(Math.abs(netSavings)) + ' over budget';
+    document.getElementById('metricNet').style.background =
+      netSavings >= 0 ? '#e8f5ee' : '#fff4ec';
+
+    /* ── Bar chart ── */
+    const maxCost = Math.max(totalCostGen, totalCostHybrid);
+    const genPct    = 100;
+    const hybridPct = (totalCostHybrid / maxCost) * 100;
+
+    const barGen = document.getElementById('bar-gen');
+    barGen.style.width   = genPct + '%';
+    barGen.textContent   = fmtUSD(totalCostGen);
+    document.getElementById('bar-gen-val').textContent = fmtUSD(totalCostGen);
+
+    const barHybrid = document.getElementById('bar-hybrid');
+    barHybrid.style.width  = hybridPct + '%';
+    barHybrid.textContent  = fmtUSD(totalCostHybrid);
+    document.getElementById('bar-hybrid-val').textContent = fmtUSD(totalCostHybrid);
+
+    /* ── Detail table ── */
+    document.getElementById('t-rateGen').textContent      = fmt(rateGen, 1)     + ' gph @ ' + loadPct + '% load';
+    document.getElementById('t-rateHybrid').textContent   = fmt(rateHybrid, 1)  + ' gph @ 75% load (optimal)';
+    document.getElementById('t-hrsGen').textContent       = fmt(hoursDay, 1)    + ' hrs/day';
+    document.getElementById('t-hrsHybrid').textContent    = fmt(runHrsHybrid, 1)+ ' hrs/day';
+    document.getElementById('t-fuelDayGen').textContent   = fmt(fuelDayGen, 1)  + ' gal/day';
+    document.getElementById('t-fuelDayHybrid').textContent= fmt(fuelDayHybrid, 1) + ' gal/day';
+    document.getElementById('t-defDayGen').textContent    = fmt(defDayGen, 2)   + ' gal/day';
+    document.getElementById('t-defDayHybrid').textContent = fmt(defDayHybrid, 2)+ ' gal/day';
+    document.getElementById('t-fuelTotGen').textContent   = fmt(fuelTotGen)     + ' gal';
+    document.getElementById('t-fuelTotHybrid').textContent= fmt(fuelTotHybrid)  + ' gal';
+    document.getElementById('t-fuelCostGen').textContent  = fmtUSD(fuelCostGen);
+    document.getElementById('t-fuelCostHybrid').textContent= fmtUSD(fuelCostHybrid);
+    document.getElementById('t-defCostGen').textContent   = fmtUSD(defCostGen);
+    document.getElementById('t-defCostHybrid').textContent= fmtUSD(defCostHybrid);
+    document.getElementById('t-bessTotal').textContent    = fmtUSD(bessRentalTotal);
+    document.getElementById('t-totalGen').textContent     = fmtUSD(totalCostGen);
+    document.getElementById('t-totalHybrid').textContent  = fmtUSD(totalCostHybrid);
+
+    /* Show results */
+    const resultsEl = document.getElementById('results');
+    resultsEl.style.display = 'block';
+    resultsEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* Init */
+  updateGenSpecs();
+  updateLoadDisplay();
+</script>
+</body>
+</html>

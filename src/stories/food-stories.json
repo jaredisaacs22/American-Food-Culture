@@ -1,0 +1,212 @@
+[
+  {
+    "id": "general-tsos-chicken",
+    "dish": "General Tso's Chicken",
+    "category": "americanized",
+    "origin_hook": "This dish doesn't exist in China. A Hunanese chef invented it in Taiwan in the 1950s, and it was completely reinvented in New York City in the 1970s — sweeter, crispier, and nothing like the original.",
+    "key_facts": [
+      "Chef Peng Chang-kuei created the original in Taiwan in 1952",
+      "The NYC version added sugar and deep-frying — unrecognizable to Peng",
+      "It became the #1 Chinese takeout dish in America by the 1980s",
+      "People in Hunan province have never heard of it"
+    ],
+    "era": "1970s",
+    "vibe": "NYC Chinatown takeout counter, red neon, styrofoam containers"
+  },
+  {
+    "id": "buffalo-wings",
+    "dish": "Buffalo Wings",
+    "category": "origin",
+    "origin_hook": "In 1964, Teressa Bellissimo at the Anchor Bar in Buffalo, NY needed to feed her son's friends late at night. She deep-fried chicken wings — a part usually thrown into stock — tossed them in hot sauce and butter, and accidentally created a billion-dollar industry.",
+    "key_facts": [
+      "Wings were considered waste cuts before 1964",
+      "The original sauce is just Frank's RedHot + melted butter",
+      "Americans eat 1.4 billion wings on Super Bowl Sunday alone",
+      "Buffalo, NY has an annual wing festival drawing 70,000+ people"
+    ],
+    "era": "1960s",
+    "vibe": "Late-night dive bar, checkered tablecloths, cold beer, jukebox"
+  },
+  {
+    "id": "fortune-cookie",
+    "dish": "Fortune Cookie",
+    "category": "americanized",
+    "origin_hook": "Fortune cookies aren't Chinese at all. They were invented by Japanese immigrants in California and adopted by Chinese restaurants during WWII when Japanese Americans were sent to internment camps.",
+    "key_facts": [
+      "Makoto Hagiwara served them at the Japanese Tea Garden in SF around 1914",
+      "Chinese restaurants adopted them after Japanese internment in 1942",
+      "3 billion fortune cookies are made annually, mostly by one company in Brooklyn",
+      "When introduced in China in the 1990s, they were marketed as 'American cookies'"
+    ],
+    "era": "1940s",
+    "vibe": "San Francisco Chinatown, hand-folded cookies, red envelopes, neon signs"
+  },
+  {
+    "id": "pizza-american",
+    "dish": "American Pizza",
+    "category": "americanized",
+    "origin_hook": "Italian immigrants brought pizza to New York, but what we eat today — thick crust, mountains of cheese, pepperoni — would be unrecognizable in Naples. Americans turned a simple flatbread into a $46 billion industry.",
+    "key_facts": [
+      "Lombardi's opened as America's first pizzeria in NYC in 1905",
+      "Pepperoni is an American invention — it doesn't exist in Italy",
+      "Americans eat 3 billion pizzas per year — 100 acres of pizza per day",
+      "Deep dish, stuffed crust, and NY-style are all purely American creations"
+    ],
+    "era": "1950s",
+    "vibe": "Brooklyn street corner, red-and-white checkered, pizza by the slice, neon OPEN sign"
+  },
+  {
+    "id": "pb-and-j",
+    "dish": "Peanut Butter & Jelly Sandwich",
+    "category": "origin",
+    "origin_hook": "PB&J started as an elite delicacy. In the early 1900s, peanut butter was a high-end health food served at fancy tea rooms. It took two world wars and sliced bread to turn it into the ultimate American kid's lunch.",
+    "key_facts": [
+      "Peanut butter was first served at upscale NYC tea rooms around 1901",
+      "U.S. Army rations in WWII paired peanut butter with grape jelly",
+      "Soldiers brought the combo home, and it became a household staple by the 1950s",
+      "The average American eats 2,500 PB&J sandwiches before graduating high school"
+    ],
+    "era": "1940s",
+    "vibe": "WWII mess hall turning into 1950s suburban kitchen, lunchbox, Americana"
+  },
+  {
+    "id": "california-roll",
+    "dish": "California Roll",
+    "category": "americanized",
+    "origin_hook": "Japanese sushi chefs in 1960s LA had a problem: Americans were grossed out by raw fish and seaweed. So they flipped the rice to the outside, hid the nori, and swapped tuna for avocado and crab. The California Roll made sushi mainstream in America.",
+    "key_facts": [
+      "Created in Los Angeles in the late 1960s (multiple chefs claim credit)",
+      "The inside-out roll was designed to hide the seaweed from squeamish diners",
+      "Avocado was used as a substitute for fatty tuna (otoro)",
+      "It opened the door for American sushi culture — now a $22 billion market"
+    ],
+    "era": "1960s",
+    "vibe": "LA sushi counter, bamboo mat, Pacific coast sunset, tiki-adjacent"
+  },
+  {
+    "id": "hot-dog",
+    "dish": "Hot Dog",
+    "category": "origin",
+    "origin_hook": "German immigrants brought sausages to America, but the hot dog as we know it was born at Coney Island. Nathan Handwerker sold them for 5 cents in 1916, undercutting his former boss — and turned a pushcart into a national symbol.",
+    "key_facts": [
+      "Nathan's Famous started at Coney Island in 1916 at 5 cents per dog",
+      "Americans eat 20 billion hot dogs per year",
+      "The Nathan's Hot Dog Eating Contest has run since 1972 (originally a publicity stunt)",
+      "Every regional style — Chicago, NYC, Sonoran, Carolina — is fiercely defended"
+    ],
+    "era": "1910s",
+    "vibe": "Coney Island boardwalk, striped awnings, brass cart, summer crowds"
+  },
+  {
+    "id": "tex-mex",
+    "dish": "Tex-Mex",
+    "category": "americanized",
+    "origin_hook": "Tex-Mex isn't Mexican food — it's its own cuisine. Born along the Texas-Mexico border, it blends northern Mexican cooking with American ingredients like yellow cheese, flour tortillas, and canned beans. Mexico didn't even have a word for it until the 1970s.",
+    "key_facts": [
+      "The term 'Tex-Mex' was originally slang for the Texas-Mexican Railway (1875)",
+      "Chili con carne, nachos, and fajitas are all Tex-Mex, not traditional Mexican",
+      "Nachos were invented in 1943 by Ignacio 'Nacho' Anaya at a border-town restaurant",
+      "Hard-shell tacos were invented by Glen Bell (Taco Bell founder) in the 1950s"
+    ],
+    "era": "1950s",
+    "vibe": "Texas roadhouse, neon cactus sign, checkered tablecloth, cold Lone Star beer"
+  },
+  {
+    "id": "mac-and-cheese",
+    "dish": "Mac and Cheese",
+    "category": "origin",
+    "origin_hook": "Thomas Jefferson brought a pasta machine back from Italy in 1789 and served baked macaroni at a White House dinner. His guests were confused. Fast forward to 1937: Kraft sold boxed mac & cheese for 19 cents during the Depression, and it became the people's food.",
+    "key_facts": [
+      "Jefferson served 'macaroni pie' at the White House in 1802",
+      "Kraft's boxed version launched in 1937 — sold 8 million boxes in the first year",
+      "It was marketed as a meal for two for 19 cents during the Great Depression",
+      "Soul food tradition elevated it with multiple cheeses and baked custard-style"
+    ],
+    "era": "1930s",
+    "vibe": "Depression-era kitchen, blue Kraft box, soul food Sunday dinner table"
+  },
+  {
+    "id": "sriracha",
+    "dish": "Sriracha",
+    "category": "americanized",
+    "origin_hook": "The iconic rooster bottle was created by David Tran, a Vietnamese refugee who started making chili sauce in a van in Los Angeles in 1980. He named it after the Thai coastal city of Si Racha but made it entirely in Irwindale, California.",
+    "key_facts": [
+      "David Tran fled Vietnam in 1979 on a Taiwanese freighter named 'Huy Fong'",
+      "He started production in a 5,000 sq ft building in LA's Chinatown",
+      "Huy Fong Foods has never spent money on advertising — ever",
+      "The rooster on the bottle represents Tran's Chinese zodiac year"
+    ],
+    "era": "1980s",
+    "vibe": "LA Chinatown warehouse, green-capped bottles on assembly line, immigrant hustle"
+  },
+  {
+    "id": "fried-chicken",
+    "dish": "American Fried Chicken",
+    "category": "origin",
+    "origin_hook": "Fried chicken's real American story is one of Black culinary genius. Enslaved West Africans brought deep-frying techniques and spice knowledge to the American South, creating the fried chicken tradition that became a cornerstone of soul food — and eventually, a global industry.",
+    "key_facts": [
+      "West African cooking traditions included seasoned, deep-fried poultry",
+      "Enslaved cooks perfected the technique in Southern kitchens throughout the 1700s–1800s",
+      "Fried chicken was one of few foods enslaved people could raise and sell independently",
+      "KFC (founded 1952) commercialized it globally, but the roots run centuries deeper"
+    ],
+    "era": "1800s–1950s",
+    "vibe": "Southern church picnic, cast iron skillet, Sunday best, warm front porch"
+  },
+  {
+    "id": "chicago-deep-dish",
+    "dish": "Chicago Deep Dish Pizza",
+    "category": "origin",
+    "origin_hook": "In 1943, two guys who'd never made pizza before opened Pizzeria Uno in Chicago and basically invented a casserole, put it in a cake pan, and called it pizza. New Yorkers have been furious ever since.",
+    "key_facts": [
+      "Ike Sewell and Ric Riccardo opened Pizzeria Uno in 1943",
+      "Neither had formal culinary training — they were businessmen",
+      "The crust is pressed into a deep round pan like a pie, cheese goes first, sauce on top",
+      "The NYC vs. Chicago pizza debate is one of America's longest-running food wars"
+    ],
+    "era": "1940s",
+    "vibe": "Chicago brick building, deep pan coming out of the oven, steam rising, tavern booth"
+  },
+  {
+    "id": "thanksgiving-turkey",
+    "dish": "Thanksgiving Turkey",
+    "category": "origin",
+    "origin_hook": "The Pilgrims probably didn't eat turkey at the first Thanksgiving in 1621. They likely ate venison, eel, and shellfish. Turkey became the star thanks to Sarah Josepha Hale, who lobbied for 40 years to make Thanksgiving a national holiday — and promoted turkey in her magazine.",
+    "key_facts": [
+      "The 1621 feast likely featured venison, waterfowl, and seafood — not turkey",
+      "Sarah Josepha Hale (who also wrote 'Mary Had a Little Lamb') campaigned from 1827–1863",
+      "Lincoln declared Thanksgiving a national holiday in 1863, partly due to her letters",
+      "Americans consume 46 million turkeys every Thanksgiving"
+    ],
+    "era": "1860s",
+    "vibe": "Victorian dining room, harvest table, Civil War era, autumn leaves, golden light"
+  },
+  {
+    "id": "hawaiian-pizza",
+    "dish": "Hawaiian Pizza",
+    "category": "americanized",
+    "origin_hook": "Hawaiian pizza isn't from Hawaii. It was invented by a Greek-Canadian named Sam Panopoulos in Ontario, Canada in 1962. He grabbed a can of Dole pineapple and threw it on a pizza on a whim. Now it's one of the most divisive foods on Earth.",
+    "key_facts": [
+      "Sam Panopoulos created it at the Satellite Restaurant in Chatham, Ontario",
+      "Named 'Hawaiian' after the Dole pineapple can brand, not the state",
+      "Iceland's president once joked he'd ban pineapple on pizza if he could",
+      "It's consistently one of the top 5 most-ordered pizza varieties in the U.S."
+    ],
+    "era": "1960s",
+    "vibe": "Small-town Canadian diner, Dole pineapple can, retro pizza parlor"
+  },
+  {
+    "id": "chimichanga",
+    "dish": "Chimichanga",
+    "category": "americanized",
+    "origin_hook": "Legend says the chimichanga was born when someone accidentally dropped a burrito into a deep fryer in Tucson, Arizona. Whether it was Monica Flin at El Charro Café in the 1920s or Woody Johnson at Macayo's in the 1940s, one thing's certain: it's 100% an Arizona invention.",
+    "key_facts": [
+      "Two Tucson restaurants claim the origin — El Charro Café and Macayo's",
+      "The name supposedly comes from a Mexican Spanish expletive Monica almost said",
+      "It's essentially a deep-fried burrito — simple, genius, and very American",
+      "Tucson was named a UNESCO City of Gastronomy partly for inventions like this"
+    ],
+    "era": "1940s",
+    "vibe": "Tucson cantina, deep fryer sizzle, desert sunset, handwritten menu board"
+  }
+]

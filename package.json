@@ -1,0 +1,24 @@
+{
+  "name": "american-food-culture",
+  "version": "1.0.0",
+  "description": "Automated social media content pipeline for American Food Culture — micro-stories of American food origins with a retro sleek theme",
+  "main": "src/index.js",
+  "scripts": {
+    "generate": "node src/index.js generate",
+    "post:instagram": "node src/index.js post instagram",
+    "post:twitter": "node src/index.js post twitter",
+    "post:all": "node src/index.js post all",
+    "schedule": "node src/scheduler.js",
+    "preview": "node src/index.js preview"
+  },
+  "keywords": ["american-food", "social-media", "instagram", "twitter", "automation"],
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "axios": "^1.7.0",
+    "dotenv": "^16.4.0",
+    "node-cron": "^3.0.3",
+    "sharp": "^0.33.0",
+    "twitter-api-v2": "^1.17.0"
+  }
+}

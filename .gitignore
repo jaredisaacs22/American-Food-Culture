@@ -1,6 +1,7 @@
 node_modules/
 .env
-dist/
 output/
+queue/
 *.log
 .DS_Store
+.instagram-token.json

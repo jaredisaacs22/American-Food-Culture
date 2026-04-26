@@ -1,22 +1,30 @@
 {
   "name": "american-food-culture",
-  "version": "1.0.0",
-  "description": "Automated social media content pipeline for American Food Culture — micro-stories of American food origins with a retro sleek theme",
+  "version": "2.0.0",
+  "description": "Fully automated social media pipeline for American Food Culture — retro micro-stories posted to Instagram and Twitter/X",
   "main": "src/index.js",
   "scripts": {
+    "start": "node src/scheduler.js",
+    "start:fill": "node src/scheduler.js --fill-now",
+    "start:post": "node src/scheduler.js --post-now",
     "generate": "node src/index.js generate",
-    "post:instagram": "node src/index.js post instagram",
-    "post:twitter": "node src/index.js post twitter",
-    "post:all": "node src/index.js post all",
-    "schedule": "node src/scheduler.js",
-    "preview": "node src/index.js preview"
+    "post": "node src/index.js post all",
+    "post:ig": "node src/index.js post instagram",
+    "post:tw": "node src/index.js post twitter",
+    "queue:fill": "node src/index.js queue fill",
+    "queue:fill5": "node src/index.js queue fill 5",
+    "queue:post": "node src/index.js queue post",
+    "queue:status": "node src/index.js queue status",
+    "stories": "node src/index.js stories",
+    "preview": "node src/index.js generate"
   },
-  "keywords": ["american-food", "social-media", "instagram", "twitter", "automation"],
+  "keywords": ["american-food", "social-media", "instagram", "twitter", "automation", "content-pipeline"],
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "axios": "^1.7.0",
     "dotenv": "^16.4.0",
+    "form-data": "^4.0.0",
     "node-cron": "^3.0.3",
     "sharp": "^0.33.0",
     "twitter-api-v2": "^1.17.0"

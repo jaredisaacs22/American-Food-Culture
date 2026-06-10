@@ -2,3 +2,5 @@ node_modules/
 *.log
 .DS_Store
 test/smoke-screenshot.png
+test/smoke-mobile.png
+test/shot-*.png

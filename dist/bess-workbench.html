@@ -1404,9 +1404,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function replaceChart(canvas, config) {
     const prev = charts.get(canvas);
     if (prev) prev.destroy();
-    const chart2 = new Chart(canvas, config);
-    charts.set(canvas, chart2);
-    return chart2;
+    const chart3 = new Chart(canvas, config);
+    charts.set(canvas, chart3);
+    return chart3;
   }
   function renderDurationCurve(canvas, durationCurve, avgKw) {
     replaceChart(canvas, {
@@ -2245,21 +2245,365 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     );
   }
 
+  // src/modules/dispatch/calc.js
+  var STEP_HOURS3 = 0.25;
+  var STEP_MS3 = 15 * 6e4;
+  function hourInWindows(h, windows) {
+    if (!windows || !windows.length) return true;
+    return windows.some((w) => w.startHour <= w.endHour ? h >= w.startHour && h < w.endHour : h >= w.startHour || h < w.endHour);
+  }
+  function monthKeyOf(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  }
+  function newMonthRecord(key, targetKw) {
+    return {
+      key,
+      targetKw,
+      rawPeakKw: 0,
+      shavedPeakKw: 0,
+      dischargeKwh: 0,
+      chargeKwh: 0,
+      // grid-side (includes round-trip losses)
+      missedIntervals: 0,
+      missedEvents: 0,
+      worstShortfallKw: 0,
+      dischargeByHour: new Array(24).fill(0),
+      chargeByHour: new Array(24).fill(0),
+      rawPeakByHour: new Array(24).fill(0),
+      shavedPeakByHour: new Array(24).fill(0)
+    };
+  }
+  function simulateDispatch(normalized, analysis, config, shaveKw, params) {
+    const eff = params.roundTripEfficiency;
+    if (!(eff > 0 && eff <= 1)) throw new Error(`round-trip efficiency out of range: ${eff}`);
+    const chargeCap = Math.min(params.maxChargeKw || Infinity, config.maxChargeKw || config.kw);
+    const windows = params.chargeWindows || [];
+    const targets = new Map(analysis.monthly.map((m) => [m.key, Math.max(0, m.peakKw - shaveKw)]));
+    const { startMs, kw } = normalized;
+    const n = kw.length;
+    const shaved = new Float64Array(n);
+    const socSeries = new Float64Array(n);
+    let soc = config.kwh;
+    let totalDischarge = 0;
+    let totalChargeGrid = 0;
+    let inMissRun = false;
+    const months = /* @__PURE__ */ new Map();
+    for (let i = 0; i < n; i++) {
+      const d = new Date(startMs + i * STEP_MS3);
+      const mk = monthKeyOf(d);
+      let rec = months.get(mk);
+      if (!rec) {
+        rec = newMonthRecord(mk, targets.get(mk) ?? 0);
+        months.set(mk, rec);
+        inMissRun = false;
+      }
+      const target = rec.targetKw;
+      const load = kw[i];
+      const h = d.getHours();
+      let served = load;
+      if (load > target + 1e-9) {
+        const want = load - target;
+        const discharge = Math.min(want, config.kw, soc / STEP_HOURS3);
+        soc -= discharge * STEP_HOURS3;
+        served = load - discharge;
+        totalDischarge += discharge * STEP_HOURS3;
+        rec.dischargeKwh += discharge * STEP_HOURS3;
+        rec.dischargeByHour[h] += discharge * STEP_HOURS3;
+        if (served > target + 1e-6) {
+          rec.missedIntervals += 1;
+          rec.worstShortfallKw = Math.max(rec.worstShortfallKw, served - target);
+          if (!inMissRun) {
+            rec.missedEvents += 1;
+            inMissRun = true;
+          }
+        } else {
+          inMissRun = false;
+        }
+      } else {
+        inMissRun = false;
+        if (soc < config.kwh - 1e-9 && hourInWindows(h, windows)) {
+          const headroom = target - load;
+          const roomKw = (config.kwh - soc) / (STEP_HOURS3 * eff);
+          const charge = Math.max(0, Math.min(chargeCap, headroom, roomKw));
+          if (charge > 0) {
+            soc += charge * STEP_HOURS3 * eff;
+            served = load + charge;
+            totalChargeGrid += charge * STEP_HOURS3;
+            rec.chargeKwh += charge * STEP_HOURS3;
+            rec.chargeByHour[h] += charge * STEP_HOURS3;
+          }
+        }
+      }
+      shaved[i] = served;
+      socSeries[i] = soc;
+      if (load > rec.rawPeakKw) rec.rawPeakKw = load;
+      if (served > rec.shavedPeakKw) rec.shavedPeakKw = served;
+      if (load > rec.rawPeakByHour[h]) rec.rawPeakByHour[h] = load;
+      if (served > rec.shavedPeakByHour[h]) rec.shavedPeakByHour[h] = served;
+    }
+    const monthly = [...months.values()].map((rec) => ({
+      ...rec,
+      theoreticalReductionKw: rec.rawPeakKw - rec.targetKw,
+      realizedReductionKw: rec.rawPeakKw - rec.shavedPeakKw
+    }));
+    const lossesKwh = totalChargeGrid * (1 - eff);
+    const annual = {
+      dischargeKwh: totalDischarge,
+      chargeKwhGrid: totalChargeGrid,
+      lossesKwh,
+      cycles: config.kwh > 0 ? totalDischarge / config.kwh : 0,
+      missedIntervals: monthly.reduce((s, m) => s + m.missedIntervals, 0),
+      missedEvents: monthly.reduce((s, m) => s + m.missedEvents, 0),
+      avgRealizedReductionKw: monthly.reduce((s, m) => s + m.realizedReductionKw, 0) / monthly.length,
+      avgTheoreticalReductionKw: monthly.reduce((s, m) => s + m.theoreticalReductionKw, 0) / monthly.length,
+      finalSocKwh: soc
+    };
+    return { monthly, annual, series: { shavedKw: shaved, soc: socSeries } };
+  }
+
   // src/modules/dispatch/index.js
+  var chart2 = null;
+  var lastSeries = null;
   var dispatch_default = {
     id: "dispatch",
     title: "3. Dispatch",
     mount(panel) {
-      clear(panel).append(
-        el(
-          "div",
-          { class: "panel" },
-          el("h2", {}, "3. Dispatch"),
-          el("p", { class: "empty-note" }, "Module not built yet.")
-        )
-      );
+      render3(panel);
+      subscribe((change) => {
+        if (change.workspaceLoaded || change.intervals || change.sizing || change.unitSpecs) {
+          lastSeries = null;
+          render3(panel);
+        }
+      });
     }
   };
+  function render3(panel) {
+    clear(panel);
+    const site = getSite();
+    const { normalized, analysis } = site.intervals;
+    const config = site.sizing.selectedConfig;
+    if (!normalized || !analysis) {
+      panel.append(el("p", { class: "empty-note" }, "Load interval data in tab 1 first."));
+      return;
+    }
+    if (!config) {
+      panel.append(el("p", { class: "empty-note" }, "Select a configuration in tab 2 (Sizing) first."));
+      return;
+    }
+    panel.append(paramsPanel(panel, site, config));
+    if (site.dispatch.results) {
+      const r = site.dispatch.results;
+      panel.append(statsStrip2(r, config));
+      panel.append(overlayPanel(site, analysis));
+      panel.append(monthlyPanel(r));
+    } else {
+      panel.append(el("p", { class: "empty-note" }, "Run the simulation to see results."));
+    }
+  }
+  function runSim(site) {
+    const { normalized, analysis } = site.intervals;
+    const config = site.sizing.selectedConfig;
+    const { shaveKw } = theoreticalRequirement(normalized, analysis, site.sizing.targetShavePct);
+    const out = simulateDispatch(normalized, analysis, config, shaveKw, site.dispatch.params);
+    lastSeries = out.series;
+    site.dispatch.results = {
+      monthly: out.monthly,
+      annual: out.annual,
+      configLabel: config.label,
+      shaveKw,
+      params: JSON.parse(JSON.stringify(site.dispatch.params)),
+      ranAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    notify({ dispatch: true });
+  }
+  function ensureSeries(site) {
+    if (!lastSeries) runSim(site);
+    return lastSeries;
+  }
+  function paramsPanel(panel, site, config) {
+    const p = site.dispatch.params;
+    const rteInp = el("input", { type: "number", min: 50, max: 100, step: 0.5, value: Math.round(p.roundTripEfficiency * 1e3) / 10 });
+    const chgInp = el("input", { type: "number", min: 1, value: p.maxChargeKw ?? (config.maxChargeKw || config.kw) });
+    const windowsBox = el("div", {});
+    const drawWindows = () => {
+      clear(windowsBox);
+      p.chargeWindows.forEach((w, i) => {
+        const s = el("input", { type: "number", min: 0, max: 24, value: w.startHour, style: "width:60px" });
+        const e = el("input", { type: "number", min: 0, max: 24, value: w.endHour, style: "width:60px" });
+        s.addEventListener("change", () => {
+          w.startHour = +s.value;
+        });
+        e.addEventListener("change", () => {
+          w.endHour = +e.value;
+        });
+        windowsBox.append(el(
+          "div",
+          { style: "margin:3px 0" },
+          el("label", { class: "field" }, "From hour", s, "to hour", e),
+          el("button", { class: "ghost-sm", onclick: () => {
+            p.chargeWindows.splice(i, 1);
+            drawWindows();
+          } }, "\u2715")
+        ));
+      });
+      windowsBox.append(el("button", { class: "ghost-sm", onclick: () => {
+        p.chargeWindows.push({ startHour: 22, endHour: 6 });
+        drawWindows();
+      } }, "+ Add charge window"));
+    };
+    drawWindows();
+    const runBtn = el("button", { class: "action", onclick: () => {
+      const rte = +rteInp.value / 100;
+      if (!(rte > 0.5 && rte <= 1)) {
+        alert("Round-trip efficiency must be 50\u2013100%.");
+        return;
+      }
+      p.roundTripEfficiency = rte;
+      p.maxChargeKw = +chgInp.value || null;
+      runSim(site);
+      render3(panel);
+    } }, site.dispatch.results ? "Re-run simulation" : "Run simulation");
+    const flags = [];
+    if (config.simultaneousChargeDischarge === false) {
+      flags.push("Config includes units that cannot charge & discharge simultaneously \u2014 the simulator never does both in one interval, so this is honored structurally.");
+    }
+    return el(
+      "div",
+      { class: "panel" },
+      el("h2", {}, `Simulation Parameters \u2014 ${config.label}`),
+      el(
+        "div",
+        {},
+        el("label", { class: "field" }, "Round-trip efficiency %:", rteInp),
+        el("label", { class: "field" }, "Max charge kW:", chgInp),
+        runBtn
+      ),
+      el("h3", {}, "Charge windows (empty = charge any time below target)"),
+      windowsBox,
+      el(
+        "p",
+        { class: "muted", style: "margin:8px 0 0" },
+        "Greedy threshold dispatch: discharge whenever load exceeds the month\u2019s target level (month peak \u2212 shave); ",
+        "charge when below it, capped so charging never creates a new peak above the target. ",
+        "Losses are booked on the charging side; battery starts the year full."
+      ),
+      ...flags.map((f) => el("div", { class: "warn", style: "margin-top:6px" }, `\u26A0 ${f}`))
+    );
+  }
+  function statsStrip2(r) {
+    const stat = (v, l, cls = "") => el("div", { class: "stat" }, el("div", { class: `v ${cls}` }, v), el("div", { class: "l" }, l));
+    return el(
+      "div",
+      { class: "stats", style: "margin-bottom:12px" },
+      stat(fmt.num(r.annual.cycles, 1), "Annual cycles"),
+      stat(fmt.num(r.annual.dischargeKwh, 0) + " kWh", "Discharged"),
+      stat(fmt.num(r.annual.lossesKwh, 0) + " kWh", "Round-trip losses"),
+      stat(String(r.annual.missedEvents), "Missed-peak events", r.annual.missedEvents ? "warn" : "ok"),
+      stat(fmt.kw(r.annual.avgRealizedReductionKw), "Avg realized reduction"),
+      stat(fmt.pct(r.annual.avgTheoreticalReductionKw > 0 ? r.annual.avgRealizedReductionKw / r.annual.avgTheoreticalReductionKw : 1), "Realized / theoretical")
+    );
+  }
+  function monthlyPanel(r) {
+    const header = el(
+      "tr",
+      {},
+      ...["Month", "Raw peak kW", "Target kW", "Shaved peak kW", "Theoretical \u2212kW", "Realized \u2212kW", "Realized %", "Missed events", "Worst shortfall kW", "Discharge kWh", "Charge kWh (grid)"].map((h) => el("th", {}, h))
+    );
+    const rows = r.monthly.map((m) => {
+      const pct = m.theoreticalReductionKw > 0 ? m.realizedReductionKw / m.theoreticalReductionKw : 1;
+      return el(
+        "tr",
+        {},
+        el("td", {}, m.key),
+        el("td", {}, fmt.num(m.rawPeakKw, 0)),
+        el("td", {}, fmt.num(m.targetKw, 0)),
+        el("td", {}, fmt.num(m.shavedPeakKw, 0)),
+        el("td", {}, fmt.num(m.theoreticalReductionKw, 1)),
+        el("td", {}, fmt.num(m.realizedReductionKw, 1)),
+        el("td", { class: pct < 0.95 ? "warn" : "ok" }, fmt.pct(pct)),
+        el("td", { class: m.missedEvents ? "warn" : "" }, m.missedEvents),
+        el("td", {}, m.worstShortfallKw ? fmt.num(m.worstShortfallKw, 1) : "\u2014"),
+        el("td", {}, fmt.num(m.dischargeKwh, 0)),
+        el("td", {}, fmt.num(m.chargeKwh, 0))
+      );
+    });
+    return el(
+      "div",
+      { class: "panel" },
+      el("h2", {}, "Realized vs Theoretical Demand Reduction by Month"),
+      el(
+        "p",
+        { class: "muted" },
+        "Theoretical = raw peak \u2212 target level. Realized = raw peak \u2212 simulated (shaved) peak. ",
+        "A missed-peak event is a contiguous run of intervals where the battery could not hold load to the target."
+      ),
+      el("table", { class: "data" }, header, ...rows)
+    );
+  }
+  function overlayPanel(site, analysis) {
+    const canvas = el("canvas");
+    const sel = el(
+      "select",
+      {},
+      ...analysis.monthly.map((m, i) => {
+        const o = el("option", { value: i }, `${m.label} \u2014 worst day ${m.worstDay.dateKey}`);
+        if (m.peakKw === analysis.overall.peakKw) o.selected = true;
+        return o;
+      })
+    );
+    const draw = () => {
+      const series = ensureSeries(site);
+      const m = analysis.monthly[+sel.value];
+      const { profileStartIdx, profileLength } = m.worstDay;
+      const norm2 = site.intervals.normalized;
+      const labels = [];
+      const raw = [];
+      const shaved = [];
+      const soc = [];
+      for (let i = 0; i < profileLength; i++) {
+        const idx = profileStartIdx + i;
+        const d = new Date(norm2.startMs + idx * 15 * 6e4);
+        labels.push(`${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`);
+        raw.push(norm2.kw[idx]);
+        shaved.push(series.shavedKw[idx]);
+        soc.push(series.soc[idx]);
+      }
+      const target = site.dispatch.results.monthly.find((x) => x.key === m.key)?.targetKw;
+      if (chart2) chart2.destroy();
+      chart2 = new Chart(canvas, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [
+            { label: "Raw load (kW)", data: raw, borderColor: "#9aa3ad", pointRadius: 0, borderWidth: 1.5, fill: false },
+            { label: "Shaved load (kW)", data: shaved, borderColor: "#FFA400", backgroundColor: "rgba(255,164,0,0.12)", pointRadius: 0, borderWidth: 2, fill: true },
+            { label: "Target level (kW)", data: raw.map(() => target), borderColor: "#c62828", borderDash: [6, 4], pointRadius: 0, borderWidth: 1.5, fill: false },
+            { label: "SOC (kWh)", data: soc, borderColor: "#2e7d32", pointRadius: 0, borderWidth: 1.5, fill: false, yAxisID: "y2" }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          scales: {
+            x: { ticks: { maxTicksLimit: 13 } },
+            y: { beginAtZero: true, title: { display: true, text: "kW" } },
+            y2: { beginAtZero: true, position: "right", title: { display: true, text: "SOC kWh" }, grid: { drawOnChartArea: false } }
+          },
+          plugins: { legend: { position: "bottom" } }
+        }
+      });
+    };
+    sel.addEventListener("change", draw);
+    requestAnimationFrame(draw);
+    return el(
+      "div",
+      { class: "panel" },
+      el("h2", {}, "Representative Day \u2014 Raw vs Shaved Load with SOC"),
+      el("label", { class: "field" }, "Day:", sel),
+      el("div", { class: "chart-box tall" }, canvas)
+    );
+  }
 
   // src/modules/tariffs/index.js
   var tariffs_default = {
@@ -2312,13 +2656,13 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   // src/modules/summary/index.js
   var summary_default = {
     id: "summary",
-    title: "7. Site Summary",
+    title: "7. Summary",
     mount(panel) {
       clear(panel).append(
         el(
           "div",
           { class: "panel" },
-          el("h2", {}, "7. Site Summary"),
+          el("h2", {}, "7. Summary"),
           el("p", { class: "empty-note" }, "Module not built yet.")
         )
       );

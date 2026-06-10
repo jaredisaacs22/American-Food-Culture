@@ -1410,9 +1410,9 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
   function replaceChart(canvas, config) {
     const prev = charts.get(canvas);
     if (prev) prev.destroy();
-    const chart3 = new Chart(canvas, config);
-    charts.set(canvas, chart3);
-    return chart3;
+    const chart4 = new Chart(canvas, config);
+    charts.set(canvas, chart4);
+    return chart4;
   }
   function renderDurationCurve(canvas, durationCurve, avgKw) {
     replaceChart(canvas, {
@@ -2971,21 +2971,297 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
     );
   }
 
+  // src/modules/revenue/calc.js
+  function defaultScenarios() {
+    const mk = (demandFactor, arbitrageFactor, dr, capacity) => ({
+      demandFactor,
+      // derate on tariff-computed demand savings
+      arbitrageFactor,
+      // derate on tariff-computed TOU arbitrage
+      dr,
+      // { enabled, ratePerKwYr, committedKw }   PLACEHOLDER rate
+      capacity
+      // { enabled, ratePerKwhYr, committedKwh } PLACEHOLDER rate
+    });
+    return {
+      selected: "base",
+      conservative: mk(
+        0.85,
+        0.5,
+        { enabled: false, ratePerKwYr: 40, committedKw: 0 },
+        { enabled: false, ratePerKwhYr: 5, committedKwh: 0 }
+      ),
+      base: mk(
+        1,
+        0.9,
+        { enabled: true, ratePerKwYr: 60, committedKw: 0 },
+        { enabled: false, ratePerKwhYr: 5, committedKwh: 0 }
+      ),
+      aggressive: mk(
+        1,
+        1,
+        { enabled: true, ratePerKwYr: 90, committedKw: 0 },
+        { enabled: true, ratePerKwhYr: 10, committedKwh: 0 }
+      )
+    };
+  }
+  function computeStack(scenario, ctx) {
+    const conflicts = [];
+    const rows = [];
+    rows.push({
+      id: "demand",
+      name: `Demand-charge savings \xD7 ${scenario.demandFactor}`,
+      annual: ctx.demandSavingsAnnual * scenario.demandFactor
+    });
+    rows.push({
+      id: "arbitrage",
+      name: `TOU arbitrage \xD7 ${scenario.arbitrageFactor}`,
+      annual: ctx.arbitrageAnnual * scenario.arbitrageFactor
+    });
+    const availKw = Math.max(0, ctx.configKw - ctx.reservedKw);
+    if (scenario.dr.enabled) {
+      const wanted = scenario.dr.committedKw;
+      const allowed = Math.min(wanted, availKw);
+      if (wanted > availKw) {
+        conflicts.push(
+          `DR commitment ${Math.round(wanted)} kW exceeds the ${Math.round(availKw)} kW left after peak shaving reserves ${Math.round(ctx.reservedKw)} kW \u2014 capped.`
+        );
+      }
+      rows.push({
+        id: "dr",
+        name: `Demand response \u2014 ${Math.round(allowed)} kW @ $${scenario.dr.ratePerKwYr}/kW-yr`,
+        committedKw: allowed,
+        annual: allowed * scenario.dr.ratePerKwYr
+      });
+    }
+    const availKwh = Math.max(0, ctx.configKwh - ctx.reservedKwh);
+    if (scenario.capacity.enabled) {
+      const wanted = scenario.capacity.committedKwh;
+      const allowed = Math.min(wanted, availKwh);
+      if (wanted > availKwh) {
+        conflicts.push(
+          `Capacity commitment ${Math.round(wanted)} kWh exceeds the ${Math.round(availKwh)} kWh left after peak shaving reserves ${Math.round(ctx.reservedKwh)} kWh \u2014 capped.`
+        );
+      }
+      rows.push({
+        id: "capacity",
+        name: `Capacity / incentive \u2014 ${Math.round(allowed)} kWh @ $${scenario.capacity.ratePerKwhYr}/kWh-yr`,
+        committedKwh: allowed,
+        annual: allowed * scenario.capacity.ratePerKwhYr
+      });
+    }
+    return {
+      rows,
+      conflicts,
+      total: rows.reduce((s, r) => s + r.annual, 0)
+    };
+  }
+
   // src/modules/revenue/index.js
+  var chart3 = null;
+  var SCENARIO_IDS = ["conservative", "base", "aggressive"];
   var revenue_default = {
     id: "revenue",
     title: "5. Revenue Stack",
     mount(panel) {
-      clear(panel).append(
-        el(
-          "div",
-          { class: "panel" },
-          el("h2", {}, "5. Revenue Stack"),
-          el("p", { class: "empty-note" }, "Module not built yet.")
-        )
-      );
+      render5(panel);
+      subscribe((change) => {
+        if (change.workspaceLoaded || change.intervals || change.sizing || change.dispatch || change.tariff) render5(panel);
+      });
     }
   };
+  function stackContext(site) {
+    const { normalized, analysis } = site.intervals;
+    const config = site.sizing.selectedConfig;
+    const results = site.dispatch.results;
+    const tariff = getTariffLibrary().find((t) => t.id === site.tariff.selectedId);
+    if (!normalized || !analysis || !config || !results || !tariff) return null;
+    const savings = computeTariffSavings(tariff, results.monthly);
+    const req = theoreticalRequirement(normalized, analysis, site.sizing.targetShavePct);
+    return {
+      demandSavingsAnnual: savings.annual.demandSavings,
+      arbitrageAnnual: savings.annual.energySavings,
+      configKw: config.kw,
+      configKwh: config.kwh,
+      // Peak shaving reserves the largest monthly realized reduction (kW) and
+      // one worst-day discharge of energy (kWh, capped at the config rating).
+      reservedKw: Math.max(...results.monthly.map((m) => m.realizedReductionKw)),
+      reservedKwh: Math.min(config.kwh, req.kwhNeed),
+      tariff,
+      config
+    };
+  }
+  function ensureScenarios(site) {
+    if (!site.revenue.scenarios) site.revenue.scenarios = defaultScenarios();
+    return site.revenue.scenarios;
+  }
+  function render5(panel) {
+    clear(panel);
+    const site = getSite();
+    const ctx = stackContext(site);
+    if (!ctx) {
+      panel.append(el(
+        "p",
+        { class: "empty-note" },
+        "Needs data + a selected config + a dispatch run + a tariff (tabs 1\u20134) before revenue can stack."
+      ));
+      return;
+    }
+    const scenarios = ensureScenarios(site);
+    const computed = {};
+    for (const id of SCENARIO_IDS) computed[id] = computeStack(scenarios[id], ctx);
+    site.revenue.computed = Object.fromEntries(SCENARIO_IDS.map((id) => [id, {
+      total: computed[id].total,
+      rows: computed[id].rows.map((r) => ({ name: r.name, annual: r.annual })),
+      conflicts: computed[id].conflicts
+    }]));
+    panel.append(headerPanel(panel, site, ctx, scenarios, computed));
+    panel.append(el(
+      "div",
+      { class: "row" },
+      ...SCENARIO_IDS.map((id) => scenarioPanel(panel, site, id, scenarios[id], computed[id], ctx))
+    ));
+    panel.append(chartPanel(computed));
+  }
+  function headerPanel(panel, site, ctx, scenarios, computed) {
+    const stat = (v, l) => el("div", { class: "stat" }, el("div", { class: "v" }, v), el("div", { class: "l" }, l));
+    const sel = el(
+      "select",
+      {},
+      ...SCENARIO_IDS.map((id) => {
+        const o = el("option", { value: id }, `${id} \u2014 ${fmt.usd(computed[id].total)}/yr`);
+        if (id === scenarios.selected) o.selected = true;
+        return o;
+      })
+    );
+    sel.addEventListener("change", () => {
+      scenarios.selected = sel.value;
+      notify({ revenue: true });
+      render5(panel);
+    });
+    return el(
+      "div",
+      { class: "panel" },
+      el("h2", {}, "Revenue Stack"),
+      el(
+        "div",
+        { class: "stats", style: "margin-bottom:8px" },
+        stat(fmt.usd(ctx.demandSavingsAnnual), "Demand savings (tariff)"),
+        stat(fmt.usd(ctx.arbitrageAnnual), "TOU arbitrage (tariff)"),
+        stat(`${Math.round(ctx.reservedKw)} kW / ${Math.round(ctx.reservedKwh)} kWh`, "Reserved by peak shaving"),
+        stat(`${Math.round(ctx.configKw)} kW / ${Math.round(ctx.configKwh)} kWh`, "Config rating")
+      ),
+      el("label", { class: "field" }, "Scenario used downstream (economics & summary):", sel),
+      el(
+        "p",
+        { class: "muted", style: "margin:6px 0 0" },
+        "Conflict rule: peak shaving reserves capacity first; DR can only commit leftover kW, capacity programs leftover kWh. ",
+        "DR and capacity program rates are PLACEHOLDER assumptions \u2014 edit per scenario."
+      )
+    );
+  }
+  function scenarioPanel(panel, site, id, sc, result) {
+    const onChange = () => {
+      notify({ revenue: true });
+      render5(panel);
+    };
+    const num = (obj, field, step = 1) => {
+      const inp = el("input", { type: "number", step, value: obj[field], style: "width:80px" });
+      inp.addEventListener("change", () => {
+        obj[field] = +inp.value;
+        onChange();
+      });
+      return inp;
+    };
+    const chk = (obj, field) => {
+      const inp = el("input", { type: "checkbox" });
+      inp.checked = !!obj[field];
+      inp.addEventListener("change", () => {
+        obj[field] = inp.checked;
+        onChange();
+      });
+      return inp;
+    };
+    const rows = result.rows.map((r) => el(
+      "tr",
+      {},
+      el("td", {}, r.name),
+      el("td", {}, fmt.usd(r.annual))
+    ));
+    const isSelected2 = site.revenue.scenarios.selected === id;
+    return el(
+      "div",
+      { class: "panel", style: isSelected2 ? "border-color:#FFA400" : "" },
+      el(
+        "h2",
+        {},
+        `${id[0].toUpperCase()}${id.slice(1)} \u2014 ${fmt.usd(result.total)}/yr`,
+        isSelected2 ? el("span", { class: "placeholder-tag", style: "margin-left:8px;background:#ffe6bf;color:#7a4b00" }, "IN USE") : null
+      ),
+      el(
+        "div",
+        {},
+        el("label", { class: "field" }, "Demand factor:", num(sc, "demandFactor", 0.05)),
+        el("label", { class: "field" }, "Arbitrage factor:", num(sc, "arbitrageFactor", 0.05))
+      ),
+      el("h3", {}, "Demand response ", el("span", { class: "placeholder-tag" }, "PLACEHOLDER RATE")),
+      el(
+        "div",
+        {},
+        el("label", { class: "field" }, "Enrolled:", chk(sc.dr, "enabled")),
+        el("label", { class: "field" }, "$/kW-yr:", num(sc.dr, "ratePerKwYr")),
+        el("label", { class: "field" }, "Committed kW:", num(sc.dr, "committedKw", 5))
+      ),
+      el("h3", {}, "Capacity / incentive ", el("span", { class: "placeholder-tag" }, "PLACEHOLDER RATE")),
+      el(
+        "div",
+        {},
+        el("label", { class: "field" }, "Enrolled:", chk(sc.capacity, "enabled")),
+        el("label", { class: "field" }, "$/kWh-yr:", num(sc.capacity, "ratePerKwhYr")),
+        el("label", { class: "field" }, "Committed kWh:", num(sc.capacity, "committedKwh", 25))
+      ),
+      el(
+        "table",
+        { class: "data", style: "margin-top:8px" },
+        el("tr", {}, el("th", {}, "Stream"), el("th", {}, "Annual $")),
+        ...rows,
+        el("tr", {}, el("td", {}, el("b", {}, "Total")), el("td", {}, el("b", {}, fmt.usd(result.total))))
+      ),
+      ...result.conflicts.map((c) => el("div", { class: "warn", style: "margin-top:6px" }, `\u26A0 ${c}`))
+    );
+  }
+  function chartPanel(computed) {
+    const canvas = el("canvas");
+    requestAnimationFrame(() => {
+      const names = [...new Set(SCENARIO_IDS.flatMap((id) => computed[id].rows.map((r) => r.id)))];
+      const colors = { demand: "#FFA400", arbitrage: "#9aa3ad", dr: "#2e7d32", capacity: "#5b7fd4" };
+      const labels = { demand: "Demand savings", arbitrage: "TOU arbitrage", dr: "Demand response", capacity: "Capacity/incentive" };
+      if (chart3) chart3.destroy();
+      chart3 = new Chart(canvas, {
+        type: "bar",
+        data: {
+          labels: SCENARIO_IDS,
+          datasets: names.map((nid) => ({
+            label: labels[nid] || nid,
+            data: SCENARIO_IDS.map((sid) => computed[sid].rows.find((r) => r.id === nid)?.annual ?? 0),
+            backgroundColor: colors[nid] || "#888"
+          }))
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { x: { stacked: true }, y: { stacked: true, title: { display: true, text: "$ / yr" } } },
+          plugins: { legend: { position: "bottom" } }
+        }
+      });
+    });
+    return el(
+      "div",
+      { class: "panel" },
+      el("h2", {}, "Scenario Comparison"),
+      el("div", { class: "chart-box" }, canvas)
+    );
+  }
 
   // src/modules/economics/index.js
   var economics_default = {

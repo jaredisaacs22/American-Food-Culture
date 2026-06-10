@@ -8,8 +8,8 @@ savings, revenue stacking, and deal economics. See `SPEC.md` for the full produc
 
 ## Using it
 
-Open `dist/bess-workbench.html` in a browser. No server or install required.
-(Chart.js / SheetJS / jsPDF load from CDN, so the first open needs internet access.)
+Open `dist/bess-workbench.html` in a browser. No server, install, or internet
+required — Chart.js, SheetJS, and jsPDF are vendored into the file (~1.3 MB).
 
 Analyses are saved/loaded as portable `*.bess.json` workspace files via the buttons in
 the header bar — there is no localStorage persistence by design.
@@ -17,10 +17,11 @@ the header bar — there is no localStorage persistence by design.
 ## Developing
 
 ```
-npm install        # esbuild only
+npm install        # esbuild + playwright (dev only)
 npm run build      # -> dist/bess-workbench.html (single self-contained file)
-npm test           # node --test test/
+npm test           # parser/analysis unit tests (node --test)
 npm run sample     # regenerate sample interval CSVs in sample-data/
+node test/smoke.browser.mjs   # headless-browser end-to-end check (needs `npx playwright install chromium`)
 ```
 
 Source layout:

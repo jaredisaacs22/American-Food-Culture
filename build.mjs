@@ -16,8 +16,13 @@ const js = result.outputFiles[0].text;
 const css = readFileSync('src/styles.css', 'utf8');
 const template = readFileSync('src/template.html', 'utf8');
 
+const vendor = ['chart.umd.min.js', 'xlsx.full.min.js', 'jspdf.umd.min.js']
+  .map((f) => readFileSync(`vendor/${f}`, 'utf8'))
+  .join('\n;\n');
+
 const html = template
   .replace('/*__INLINE_CSS__*/', () => css)
+  .replace('/*__VENDOR_JS__*/', () => vendor)
   .replace('/*__INLINE_JS__*/', () => js);
 
 if (html.includes('__INLINE_')) {

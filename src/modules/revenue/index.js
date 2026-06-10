@@ -104,7 +104,8 @@ function headerPanel(panel, site, ctx, scenarios, computed) {
     el('label', { class: 'field' }, 'Scenario used downstream (economics & summary):', sel),
     el('p', { class: 'muted', style: 'margin:6px 0 0' },
       'Conflict rule: peak shaving reserves capacity first; DR can only commit leftover kW, capacity programs leftover kWh. ',
-      'DR and capacity program rates are PLACEHOLDER assumptions — edit per scenario.'),
+      'DR and capacity program rates are PLACEHOLDER assumptions — edit per scenario. ',
+      'Factors scale upside down and downside up (a negative arbitrage gets WORSE in conservative), so scenarios always order conservative ≤ base ≤ aggressive.'),
   );
 }
 

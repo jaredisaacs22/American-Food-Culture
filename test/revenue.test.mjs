@@ -19,9 +19,10 @@ test('base scenario: hand-computed stack', () => {
   const arb = r.rows.find((x) => x.id === 'arbitrage');
   const dr = r.rows.find((x) => x.id === 'dr');
   assert.equal(demand.annual, 10000);
-  assert.ok(Math.abs(arb.annual - -450) < 1e-9);
+  // negative arbitrage grows under a <1 factor (worse case): −500 / 0.9
+  assert.ok(Math.abs(arb.annual - -500 / 0.9) < 1e-9);
   assert.equal(dr.annual, 100 * 60);
-  assert.ok(Math.abs(r.total - (10000 - 450 + 6000)) < 1e-9);
+  assert.ok(Math.abs(r.total - (10000 - 500 / 0.9 + 6000)) < 1e-9);
   assert.equal(r.conflicts.length, 0);
 });
 
@@ -51,19 +52,20 @@ test('disabled streams contribute nothing', () => {
   const sc = defaultScenarios().conservative; // DR + capacity disabled
   const r = computeStack(sc, ctx);
   assert.equal(r.rows.length, 2); // demand + arbitrage only
-  assert.ok(Math.abs(r.total - (10000 * 0.85 + -500 * 0.5)) < 1e-9);
+  assert.ok(Math.abs(r.total - (10000 * 0.85 + -500 / 0.5)) < 1e-9);
 });
 
-test('scenario ordering: aggressive >= base >= conservative on same inputs', () => {
+test('scenario ordering holds for positive AND negative arbitrage', () => {
   const scs = defaultScenarios();
   // same commitments everywhere so only factors/rates differ
   for (const id of ['conservative', 'base', 'aggressive']) {
     scs[id].dr.committedKw = 100;
     scs[id].capacity.committedKwh = 100;
   }
-  const posCtx = { ...ctx, arbitrageAnnual: 2000 };
-  const c = computeStack(scs.conservative, posCtx).total;
-  const b = computeStack(scs.base, posCtx).total;
-  const a = computeStack(scs.aggressive, posCtx).total;
-  assert.ok(c <= b && b <= a, `${c} <= ${b} <= ${a}`);
+  for (const arbitrageAnnual of [2000, -2000]) {
+    const c = computeStack(scs.conservative, { ...ctx, arbitrageAnnual }).total;
+    const b = computeStack(scs.base, { ...ctx, arbitrageAnnual }).total;
+    const a = computeStack(scs.aggressive, { ...ctx, arbitrageAnnual }).total;
+    assert.ok(c <= b && b <= a, `arb=${arbitrageAnnual}: ${c} <= ${b} <= ${a}`);
+  }
 });

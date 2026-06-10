@@ -49,10 +49,17 @@ export function computeStack(scenario, ctx) {
     annual: ctx.demandSavingsAnnual * scenario.demandFactor,
   });
 
+  // Scenario factors scale confidence in the modeled value: upside shrinks
+  // toward conservative, downside (negative arbitrage = RTE losses exceeding
+  // the rate spread) GROWS toward conservative. Keeps the scenarios ordered
+  // conservative <= base <= aggressive regardless of sign.
+  const arb = ctx.arbitrageAnnual >= 0
+    ? ctx.arbitrageAnnual * scenario.arbitrageFactor
+    : ctx.arbitrageAnnual / scenario.arbitrageFactor;
   rows.push({
     id: 'arbitrage',
     name: `TOU arbitrage × ${scenario.arbitrageFactor}`,
-    annual: ctx.arbitrageAnnual * scenario.arbitrageFactor,
+    annual: arb,
   });
 
   const availKw = Math.max(0, ctx.configKw - ctx.reservedKw);

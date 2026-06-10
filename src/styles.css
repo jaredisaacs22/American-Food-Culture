@@ -172,6 +172,17 @@ button.action {
   cursor: pointer;
 }
 button.action:hover { filter: brightness(1.08); }
+button.ghost-sm {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  padding: 3px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 11.5px;
+}
+button.ghost-sm:hover { border-color: var(--sunbelt-orange); }
+table.data tr.selected-row td { background: #fff4df; }
 
 /* ---------- Dropzone ---------- */
 .dropzone {

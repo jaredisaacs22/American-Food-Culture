@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BESS Site Analysis Workbench</title>
+<!-- CDN libraries (per spec, CDN-loaded libs are acceptable in the self-contained file) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --sunbelt-orange: #FFA400; /* PLACEHOLDER — exact brand hex to be confirmed */
+  --ink: #1f2329;
+  --ink-soft: #5a626e;
+  --bg: #f5f6f8;
+  --panel: #ffffff;
+  --line: #d9dde3;
+  --bad: #c62828;
+  --good: #2e7d32;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: Roboto, "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+/* ---------- App chrome ---------- */
+header.appbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: var(--ink);
+  color: #fff;
+}
+header.appbar .logo {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--sunbelt-orange);
+  white-space: nowrap;
+}
+header.appbar .site-name input {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  width: 260px;
+}
+header.appbar .site-name input:focus { background: #fff; color: var(--ink); outline: none; }
+header.appbar .spacer { flex: 1; }
+header.appbar button {
+  background: var(--sunbelt-orange);
+  border: none;
+  color: #1f2329;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+header.appbar button.ghost { background: transparent; color: #fff; border: 1px solid #6b7280; }
+header.appbar button:hover { filter: brightness(1.08); }
+
+nav.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 14px;
+  background: var(--ink);
+}
+nav.tabs button {
+  background: transparent;
+  border: none;
+  color: #c3c9d1;
+  padding: 9px 14px;
+  font-size: 12.5px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+}
+nav.tabs button:hover { color: #fff; }
+nav.tabs button.active {
+  color: #fff;
+  border-bottom-color: var(--sunbelt-orange);
+  font-weight: 600;
+}
+
+main#tab-host { padding: 14px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ---------- Generic layout ---------- */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.panel h2 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  border-bottom: 2px solid var(--sunbelt-orange);
+  padding-bottom: 5px;
+}
+.panel h3 { margin: 14px 0 6px; font-size: 13px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.row > .panel { flex: 1; min-width: 320px; }
+.muted { color: var(--ink-soft); }
+.warn { color: var(--bad); font-weight: 600; }
+.ok { color: var(--good); font-weight: 600; }
+.placeholder-tag {
+  background: #fff3cd;
+  color: #7a5c00;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.4px;
+}
+
+/* ---------- Stat strip ---------- */
+.stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--sunbelt-orange);
+  border-radius: 4px;
+  padding: 8px 14px;
+  min-width: 130px;
+}
+.stat .v { font-size: 19px; font-weight: 700; }
+.stat .l { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.4px; }
+
+/* ---------- Tables ---------- */
+table.data {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+}
+table.data th, table.data td {
+  border: 1px solid var(--line);
+  padding: 4px 8px;
+  text-align: right;
+}
+table.data th { background: #eef0f3; text-align: center; }
+table.data td:first-child, table.data th:first-child { text-align: left; }
+table.data tr:nth-child(even) td { background: #fafbfc; }
+
+/* ---------- Heat map ---------- */
+table.heatmap { border-collapse: collapse; font-size: 10.5px; }
+table.heatmap th, table.heatmap td {
+  padding: 3px 5px;
+  text-align: center;
+  border: 1px solid #fff;
+  min-width: 30px;
+}
+table.heatmap th { background: #eef0f3; font-weight: 600; }
+
+/* ---------- Forms ---------- */
+label.field { display: inline-flex; align-items: center; gap: 6px; margin: 4px 12px 4px 0; }
+input[type="text"], input[type="number"], select {
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-size: 12.5px;
+  font-family: inherit;
+}
+input[type="number"] { width: 90px; }
+button.action {
+  background: var(--sunbelt-orange);
+  border: none;
+  color: #1f2329;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+button.action:hover { filter: brightness(1.08); }
+
+/* ---------- Dropzone ---------- */
+.dropzone {
+  border: 2px dashed var(--line);
+  border-radius: 6px;
+  padding: 28px;
+  text-align: center;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.dropzone.dragover { border-color: var(--sunbelt-orange); background: #fff8ec; }
+
+/* ---------- Charts ---------- */
+.chart-box { position: relative; height: 300px; }
+.chart-box.tall { height: 380px; }
+
+.empty-note { color: var(--ink-soft); font-style: italic; padding: 18px 0; }
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(() => {
+  // src/ui/dom.js
+  function el(tag, attrs = {}, ...children) {
+    const node = document.createElement(tag);
+    for (const [k, v] of Object.entries(attrs)) {
+      if (k === "class") node.className = v;
+      else if (k === "html") node.innerHTML = v;
+      else if (k.startsWith("on") && typeof v === "function") node.addEventListener(k.slice(2), v);
+      else if (v !== null && v !== void 0) node.setAttribute(k, v);
+    }
+    for (const c of children.flat()) {
+      if (c === null || c === void 0) continue;
+      node.append(c.nodeType ? c : document.createTextNode(String(c)));
+    }
+    return node;
+  }
+  function clear(node) {
+    while (node.firstChild) node.removeChild(node.firstChild);
+    return node;
+  }
+  function downloadFile(name, content, mime = "application/json") {
+    const blob = new Blob([content], { type: mime });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5e3);
+  }
+
+  // src/model/units.js
+  function defaultUnitSpecs() {
+    return [
+      {
+        id: "bess-60-300",
+        name: "BESS 60 kW / 300 kWh",
+        kw: 60,
+        kwh: 300,
+        maxChargeKw: 60,
+        canParallel: true,
+        simultaneousChargeDischarge: true
+      },
+      {
+        id: "bess-500-1000",
+        name: "BESS 500 kW / 1 MWh",
+        kw: 500,
+        kwh: 1e3,
+        maxChargeKw: 500,
+        canParallel: true,
+        simultaneousChargeDischarge: true
+      }
+    ];
+  }
+
+  // src/model/store.js
+  var WORKSPACE_VERSION = 1;
+  function createEmptySite() {
+    return {
+      meta: {
+        name: "Untitled Site",
+        customer: "",
+        address: "",
+        utility: "",
+        notes: "",
+        createdAt: (/* @__PURE__ */ new Date()).toISOString()
+      },
+      // Module 1 — Interval Data Workbench
+      intervals: {
+        // Normalized series: 15-minute kW. times are epoch ms (local-naive parsing).
+        // { startMs, stepMin: 15, kw: number[], times: number[] }
+        normalized: null,
+        source: null,
+        // { fileName, format, detectedIntervalMin, detectedUnit, rowsParsed, gapsFilled, duplicatesMerged, notes[] }
+        analysis: null
+        // computed summary (monthly peaks, worst days, load factor, ...)
+      },
+      // Module 2 — Sizing
+      sizing: {
+        targetShavePct: 100,
+        // % of (peak - average) to shave
+        manualOverride: null,
+        // { kw, kwh } or null
+        selectedConfig: null
+        // chosen candidate config
+      },
+      // Module 3 — Dispatch
+      dispatch: {
+        params: {
+          roundTripEfficiency: 0.88,
+          chargeWindows: []
+          // [{startHour, endHour}] — empty = charge any time load headroom allows
+        },
+        results: null
+      },
+      // Module 4 — Tariff
+      tariff: { selectedId: null },
+      // Module 5 — Revenue stack
+      revenue: { scenarios: null },
+      // Module 6 — Deal economics
+      economics: { inputs: null, results: null },
+      // Module 7 — Summary
+      summary: { permittingRisk: "Medium", permittingNotes: "" }
+    };
+  }
+  var state = {
+    site: createEmptySite(),
+    unitSpecs: defaultUnitSpecs(),
+    tariffLibrary: []
+    // seeded by tariff module
+  };
+  var listeners = /* @__PURE__ */ new Set();
+  function getSite() {
+    return state.site;
+  }
+  function notify(change = {}) {
+    for (const fn of listeners) fn(change);
+  }
+  function exportWorkspace() {
+    return JSON.stringify({
+      version: WORKSPACE_VERSION,
+      savedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      site: state.site,
+      unitSpecs: state.unitSpecs,
+      tariffLibrary: state.tariffLibrary
+    });
+  }
+  function importWorkspace(json) {
+    const data = JSON.parse(json);
+    if (!data || typeof data !== "object" || !data.site) {
+      throw new Error("Not a BESS workbench workspace file");
+    }
+    if (data.version > WORKSPACE_VERSION) {
+      throw new Error(`Workspace version ${data.version} is newer than this build supports (${WORKSPACE_VERSION})`);
+    }
+    state.site = Object.assign(createEmptySite(), data.site);
+    if (Array.isArray(data.unitSpecs) && data.unitSpecs.length) state.unitSpecs = data.unitSpecs;
+    if (Array.isArray(data.tariffLibrary)) state.tariffLibrary = data.tariffLibrary;
+    notify({ workspaceLoaded: true });
+  }
+  function resetSite() {
+    state.site = createEmptySite();
+    notify({ workspaceLoaded: true });
+  }
+
+  // src/ui/tabs.js
+  function renderShell(root, modules2) {
+    clear(root);
+    const siteNameInput = el("input", {
+      type: "text",
+      value: getSite().meta.name,
+      onchange: (e) => {
+        getSite().meta.name = e.target.value;
+        notify({ meta: true });
+      }
+    });
+    const header = el(
+      "header",
+      { class: "appbar" },
+      el("span", { class: "logo" }, "SUNBELT"),
+      el("span", {}, "BESS Site Analysis Workbench"),
+      el("span", { class: "site-name" }, siteNameInput),
+      el("span", { class: "spacer" }),
+      el("button", { class: "ghost", onclick: onNewSite }, "New Site"),
+      el("button", { class: "ghost", onclick: onLoadWorkspace }, "Load Workspace"),
+      el("button", { onclick: onSaveWorkspace }, "Save Workspace")
+    );
+    const nav = el("nav", { class: "tabs" });
+    const host = el("main", { id: "tab-host" });
+    const panels = /* @__PURE__ */ new Map();
+    for (const mod of modules2) {
+      const btn = el("button", { onclick: () => activate(mod.id) }, mod.title);
+      btn.dataset.tab = mod.id;
+      nav.append(btn);
+      const panel = el("section", { class: "tab-panel" });
+      panel.dataset.tab = mod.id;
+      panels.set(mod.id, panel);
+      host.append(panel);
+    }
+    root.append(header, nav, host);
+    for (const mod of modules2) mod.mount(panels.get(mod.id));
+    function activate(id) {
+      for (const b of nav.children) b.classList.toggle("active", b.dataset.tab === id);
+      for (const [pid, p] of panels) p.classList.toggle("active", pid === id);
+    }
+    activate(modules2[0].id);
+    function onSaveWorkspace() {
+      const name = (getSite().meta.name || "site").replace(/[^\w.-]+/g, "_");
+      downloadFile(`${name}.bess.json`, exportWorkspace());
+    }
+    function onLoadWorkspace() {
+      const input = el("input", { type: "file", accept: ".json,application/json" });
+      input.addEventListener("change", async () => {
+        const file = input.files[0];
+        if (!file) return;
+        try {
+          importWorkspace(await file.text());
+          siteNameInput.value = getSite().meta.name;
+        } catch (err) {
+          alert(`Could not load workspace: ${err.message}`);
+        }
+      });
+      input.click();
+    }
+    function onNewSite() {
+      if (!confirm("Start a new site? Unsaved analysis will be lost.")) return;
+      resetSite();
+      siteNameInput.value = getSite().meta.name;
+    }
+  }
+
+  // src/modules/intervals/index.js
+  var intervals_default = {
+    id: "intervals",
+    title: "1. Interval Data",
+    mount(panel) {
+      clear(panel).append(
+        el(
+          "div",
+          { class: "panel" },
+          el("h2", {}, "1. Interval Data"),
+          el("p", { class: "empty-note" }, "Module not built yet.")
+        )
+      );
+    }
+  };
+
+  // src/modules/sizing/index.js
+  var sizing_default = {
+    id: "sizing",
+    title: "2. Sizing",
+    mount(panel) {
+      clear(panel).append(
+        el(
+          "div",
+          { class: "panel" },
+          el("h2", {}, "2. Sizing"),
+          el("p", { class: "empty-note" }, "Module not built yet.")
+        )
+      );
+    }
+  };
+
+  // src/modules/dispatch/index.js
+  var dispatch_default = {
+    id: "dispatch",
+    title: "3. Dispatch",
+    mount(panel) {
+      clear(panel).append(
+        el(
+          "div",
+          { class: "panel" },
+          el("h2", {}, "3. Dispatch"),
+          el("p", { class: "empty-note" }, "Module not built yet.")
+        )
+      );
+    }
+  };
+
+  // src/modules/tariffs/index.js
+  var tariffs_default = {
+    id: "tariffs",
+    title: "4. Tariffs",
+    mount(panel) {
+      clear(panel).append(
+        el(
+          "div",
+          { class: "panel" },
+          el("h2", {}, "4. Tariffs"),
+          el("p", { class: "empty-note" }, "Module not built yet.")
+        )
+      );
+    }
+  };
+
+  // src/modules/revenue/index.js
+  var revenue_default = {
+    id: "revenue",
+    title: "5. Revenue Stack",
+    mount(panel) {
+      clear(panel).append(
+        el(
+          "div",
+          { class: "panel" },
+          el("h2", {}, "5. Revenue Stack"),
+          el("p", { class: "empty-note" }, "Module not built yet.")
+        )
+      );
+    }
+  };
+
+  // src/modules/economics/index.js
+  var economics_default = {
+    id: "economics",
+    title: "6. Deal Economics",
+    mount(panel) {
+      clear(panel).append(
+        el(
+          "div",
+          { class: "panel" },
+          el("h2", {}, "6. Deal Economics"),
+          el("p", { class: "empty-note" }, "Module not built yet.")
+        )
+      );
+    }
+  };
+
+  // src/modules/summary/index.js
+  var summary_default = {
+    id: "summary",
+    title: "7. Site Summary",
+    mount(panel) {
+      clear(panel).append(
+        el(
+          "div",
+          { class: "panel" },
+          el("h2", {}, "7. Site Summary"),
+          el("p", { class: "empty-note" }, "Module not built yet.")
+        )
+      );
+    }
+  };
+
+  // src/main.js
+  var modules = [intervals_default, sizing_default, dispatch_default, tariffs_default, revenue_default, economics_default, summary_default];
+  document.addEventListener("DOMContentLoaded", () => {
+    renderShell(document.getElementById("app"), modules);
+  });
+})();
+
+</script>
+</body>
+</html>

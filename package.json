@@ -1,0 +1,15 @@
+{
+  "name": "bess-workbench",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Internal BESS site-analysis workbench for behind-the-meter battery storage deals",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node --test test/",
+    "sample": "node scripts/make-sample-data.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}

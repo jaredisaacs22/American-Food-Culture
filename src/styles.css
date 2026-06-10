@@ -1,0 +1,191 @@
+:root {
+  --sunbelt-orange: #FFA400; /* PLACEHOLDER — exact brand hex to be confirmed */
+  --ink: #1f2329;
+  --ink-soft: #5a626e;
+  --bg: #f5f6f8;
+  --panel: #ffffff;
+  --line: #d9dde3;
+  --bad: #c62828;
+  --good: #2e7d32;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: Roboto, "Segoe UI", Arial, sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--bg);
+}
+
+/* ---------- App chrome ---------- */
+header.appbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  background: var(--ink);
+  color: #fff;
+}
+header.appbar .logo {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--sunbelt-orange);
+  white-space: nowrap;
+}
+header.appbar .site-name input {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  width: 260px;
+}
+header.appbar .site-name input:focus { background: #fff; color: var(--ink); outline: none; }
+header.appbar .spacer { flex: 1; }
+header.appbar button {
+  background: var(--sunbelt-orange);
+  border: none;
+  color: #1f2329;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+}
+header.appbar button.ghost { background: transparent; color: #fff; border: 1px solid #6b7280; }
+header.appbar button:hover { filter: brightness(1.08); }
+
+nav.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 14px;
+  background: var(--ink);
+}
+nav.tabs button {
+  background: transparent;
+  border: none;
+  color: #c3c9d1;
+  padding: 9px 14px;
+  font-size: 12.5px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+}
+nav.tabs button:hover { color: #fff; }
+nav.tabs button.active {
+  color: #fff;
+  border-bottom-color: var(--sunbelt-orange);
+  font-weight: 600;
+}
+
+main#tab-host { padding: 14px; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ---------- Generic layout ---------- */
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+.panel h2 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  border-bottom: 2px solid var(--sunbelt-orange);
+  padding-bottom: 5px;
+}
+.panel h3 { margin: 14px 0 6px; font-size: 13px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.row > .panel { flex: 1; min-width: 320px; }
+.muted { color: var(--ink-soft); }
+.warn { color: var(--bad); font-weight: 600; }
+.ok { color: var(--good); font-weight: 600; }
+.placeholder-tag {
+  background: #fff3cd;
+  color: #7a5c00;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.4px;
+}
+
+/* ---------- Stat strip ---------- */
+.stats { display: flex; gap: 10px; flex-wrap: wrap; }
+.stat {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--sunbelt-orange);
+  border-radius: 4px;
+  padding: 8px 14px;
+  min-width: 130px;
+}
+.stat .v { font-size: 19px; font-weight: 700; }
+.stat .l { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.4px; }
+
+/* ---------- Tables ---------- */
+table.data {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+}
+table.data th, table.data td {
+  border: 1px solid var(--line);
+  padding: 4px 8px;
+  text-align: right;
+}
+table.data th { background: #eef0f3; text-align: center; }
+table.data td:first-child, table.data th:first-child { text-align: left; }
+table.data tr:nth-child(even) td { background: #fafbfc; }
+
+/* ---------- Heat map ---------- */
+table.heatmap { border-collapse: collapse; font-size: 10.5px; }
+table.heatmap th, table.heatmap td {
+  padding: 3px 5px;
+  text-align: center;
+  border: 1px solid #fff;
+  min-width: 30px;
+}
+table.heatmap th { background: #eef0f3; font-weight: 600; }
+
+/* ---------- Forms ---------- */
+label.field { display: inline-flex; align-items: center; gap: 6px; margin: 4px 12px 4px 0; }
+input[type="text"], input[type="number"], select {
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-size: 12.5px;
+  font-family: inherit;
+}
+input[type="number"] { width: 90px; }
+button.action {
+  background: var(--sunbelt-orange);
+  border: none;
+  color: #1f2329;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+button.action:hover { filter: brightness(1.08); }
+
+/* ---------- Dropzone ---------- */
+.dropzone {
+  border: 2px dashed var(--line);
+  border-radius: 6px;
+  padding: 28px;
+  text-align: center;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.dropzone.dragover { border-color: var(--sunbelt-orange); background: #fff8ec; }
+
+/* ---------- Charts ---------- */
+.chart-box { position: relative; height: 300px; }
+.chart-box.tall { height: 380px; }
+
+.empty-note { color: var(--ink-soft); font-style: italic; padding: 18px 0; }

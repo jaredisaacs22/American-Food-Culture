@@ -960,7 +960,28 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
   function fixYear(y) {
     return y < 100 ? y + 2e3 : y;
   }
+  var EXCEL_EPOCH_UTC = Date.UTC(1899, 11, 30);
+  var DAY_MS = 864e5;
+  function isExcelSerial(v) {
+    return typeof v === "number" && isFinite(v) && v >= 2e4 && v < 8e4;
+  }
+  function excelSerialToMs(serial) {
+    const u = new Date(EXCEL_EPOCH_UTC + Math.round(serial * DAY_MS));
+    return new Date(
+      u.getUTCFullYear(),
+      u.getUTCMonth(),
+      u.getUTCDate(),
+      u.getUTCHours(),
+      u.getUTCMinutes(),
+      u.getUTCSeconds()
+    ).getTime();
+  }
   function parseDateOnly(s) {
+    if (s instanceof Date) return { y: s.getFullYear(), mo: s.getMonth() + 1, d: s.getDate() };
+    if (isExcelSerial(s)) {
+      const d = new Date(excelSerialToMs(s));
+      return { y: d.getFullYear(), mo: d.getMonth() + 1, d: d.getDate() };
+    }
     s = String(s).trim();
     let m = DATE_MDY.exec(s);
     if (m) return { y: fixYear(+m[3]), mo: +m[1], d: +m[2] };
@@ -969,6 +990,18 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     return null;
   }
   function parseTimeOnly(s) {
+    if (s instanceof Date) return { hh: s.getHours(), mm: s.getMinutes() };
+    if (typeof s === "number" && isFinite(s)) {
+      if (s >= 0 && s < 1) {
+        const mins = Math.round(s * 1440);
+        return { hh: Math.floor(mins / 60) % 24, mm: mins % 60 };
+      }
+      if (isExcelSerial(s)) {
+        const d = new Date(excelSerialToMs(s));
+        return { hh: d.getHours(), mm: d.getMinutes() };
+      }
+      return null;
+    }
     s = String(s).trim();
     const m = TIME_RE.exec(s);
     if (!m) return null;
@@ -979,6 +1012,10 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     return { hh, mm: +m[2] };
   }
   function parseTimestamp(s) {
+    if (s instanceof Date) {
+      return new Date(s.getFullYear(), s.getMonth(), s.getDate(), s.getHours(), s.getMinutes(), s.getSeconds()).getTime();
+    }
+    if (isExcelSerial(s)) return excelSerialToMs(s);
     s = String(s).trim();
     let m = ISO_DT.exec(s);
     if (m) return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0)).getTime();
@@ -994,10 +1031,13 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     if (d) return new Date(d.y, d.mo - 1, d.d).getTime();
     return null;
   }
+  function timeStart(v) {
+    return typeof v === "string" ? v.split("-")[0].trim() : v;
+  }
   function combineDateTime(dateStr, timeStr) {
     const d = parseDateOnly(dateStr);
     if (!d) return null;
-    const t = timeStr === void 0 || timeStr === null || String(timeStr).trim() === "" ? { hh: 0, mm: 0 } : parseTimeOnly(String(timeStr).split("-")[0].trim());
+    const t = timeStr === void 0 || timeStr === null || String(timeStr).trim() === "" ? { hh: 0, mm: 0 } : parseTimeOnly(timeStart(timeStr));
     if (!t) return null;
     return new Date(d.y, d.mo - 1, d.d, t.hh, t.mm).getTime();
   }
@@ -1026,6 +1066,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     return null;
   }
   function looksLikeTimeOfDay(s) {
+    if (typeof s === "number") return isFinite(s) && s >= 0 && s < 1;
     const part = String(s).split("-")[0].trim();
     return parseTimeOnly(part) !== null;
   }
@@ -1038,14 +1079,14 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       if (nonEmpty.length < 2) continue;
       const timeCols = [];
       for (let c = 1; c < row.length; c++) {
-        if (looksLikeTimeOfDay(row[c])) timeCols.push(c);
+        if (looksLikeTimeOfDay(rows[i][c])) timeCols.push(c);
       }
       if (timeCols.length >= 20 && headerMatches(row[0], [...DATE_HEADERS, ...DATETIME_HEADERS])) {
         const unitGuess = row.map(norm).join(" ").includes("kwh") ? "kWh" : row.map(norm).join(" ").includes("kw") ? "kW" : null;
         return {
           type: "wide",
           headerIdx: i,
-          cols: { date: 0, timeCols, timeLabels: timeCols.map((c) => row[c]) },
+          cols: { date: 0, timeCols, timeLabels: timeCols.map((c) => rows[i][c]) },
           unitGuess,
           notes
         };
@@ -1117,7 +1158,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     if (layout.type === "wide") {
       const { date, timeCols, timeLabels } = layout.cols;
       const offsets = timeLabels.map((t) => {
-        const p = parseTimeOnly(String(t).split("-")[0].trim());
+        const p = parseTimeOnly(timeStart(t));
         return p ? (p.hh * 60 + p.mm) * 6e4 : null;
       });
       for (let i = start; i < rows.length; i++) {
@@ -1287,7 +1328,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     };
   }
   function inferWideInterval(layout) {
-    const offs = layout.cols.timeLabels.map((t) => parseTimeOnly(String(t).split("-")[0].trim())).filter(Boolean).map((p) => p.hh * 60 + p.mm).sort((a, b) => a - b);
+    const offs = layout.cols.timeLabels.map((t) => parseTimeOnly(timeStart(t))).filter(Boolean).map((p) => p.hh * 60 + p.mm).sort((a, b) => a - b);
     if (offs.length < 2) return null;
     return offs[1] - offs[0];
   }
@@ -1600,25 +1641,51 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
   async function handleFile(file, panel, overrides = {}) {
     try {
       let rows;
-      if (/\.xlsx?$|\.xls$/i.test(file.name)) {
-        if (typeof XLSX === "undefined") throw new Error("SheetJS failed to load (no internet?) \u2014 use CSV instead");
+      let extraNotes = [];
+      if (/\.(xlsx|xlsm|xlsb|xls)$/i.test(file.name)) {
+        if (typeof XLSX === "undefined") throw new Error("Spreadsheet engine failed to load \u2014 export the data as CSV instead");
         const wb = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: false });
-        const sheet = wb.Sheets[wb.SheetNames[0]];
-        rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: "" });
+        ({ rows, notes: extraNotes } = pickBestSheet(wb));
+        if (wb.Workbook?.WBProps?.date1904) {
+          extraNotes.push("Workbook uses the 1904 date system (old Mac Excel) \u2014 dates may be off by 4 years. Re-export as CSV if so.");
+        }
       } else {
         rows = parseCsv(await file.text());
       }
       lastRows = rows;
       lastFileName = file.name;
-      process(rows, file.name, panel, overrides);
+      process(rows, file.name, panel, overrides, extraNotes);
     } catch (err) {
-      alert(`Could not parse file: ${err.message}`);
+      alert(`Could not parse "${file.name}": ${err.message}`);
     }
   }
-  function process(rows, fileName, panel, overrides) {
+  function pickBestSheet(wb) {
+    let best = null;
+    const tried = [];
+    for (const name of wb.SheetNames) {
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: true, defval: "" });
+      let count = 0;
+      try {
+        const layout = detectLayout(rows);
+        if (layout) count = extractRecords(rows, layout).records.length;
+      } catch {
+      }
+      tried.push(`"${name}" (${count.toLocaleString()} readable rows)`);
+      if (count >= 4 && (!best || count > best.count)) best = { name, rows, count };
+    }
+    if (!best) {
+      throw new Error(
+        `No sheet contained recognizable interval data. Sheets tried: ${tried.join(", ")}. Expected a header row with date/time + kW or kWh columns (or a date \xD7 time-of-day grid).`
+      );
+    }
+    const notes = wb.SheetNames.length > 1 ? [`Workbook has ${wb.SheetNames.length} sheets \u2014 used "${best.name}". Tried: ${tried.join(", ")}.`] : [];
+    return { rows: best.rows, notes };
+  }
+  function process(rows, fileName, panel, overrides, extraNotes = []) {
     const site = getSite();
     try {
       const { normalized, source } = parseIntervalRows(rows, fileName, overrides);
+      source.notes.push(...extraNotes);
       site.intervals.normalized = normalized;
       site.intervals.source = source;
       site.intervals.analysis = analyzeIntervals(normalized);

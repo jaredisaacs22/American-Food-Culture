@@ -5,7 +5,7 @@
 
 import { el, clear, fmt } from '../../ui/dom.js';
 import { getSite, notify, subscribe } from '../../model/store.js';
-import { parseCsv, parseIntervalRows } from './parser.js';
+import { parseCsv, parseIntervalRows, detectLayout, extractRecords } from './parser.js';
 import { analyzeIntervals, worstDayProfile } from './analysis.js';
 import { renderDurationCurve, renderMonthlyPeaks, renderDayProfile } from './charts.js';
 
@@ -74,26 +74,61 @@ function uploadPanel(panel) {
 async function handleFile(file, panel, overrides = {}) {
   try {
     let rows;
-    if (/\.xlsx?$|\.xls$/i.test(file.name)) {
-      if (typeof XLSX === 'undefined') throw new Error('SheetJS failed to load (no internet?) — use CSV instead');
+    let extraNotes = [];
+    if (/\.(xlsx|xlsm|xlsb|xls)$/i.test(file.name)) {
+      if (typeof XLSX === 'undefined') throw new Error('Spreadsheet engine failed to load — export the data as CSV instead');
+      // raw:true keeps Excel date serials as numbers (the parser understands
+      // them) instead of relying on the cell's display format, which often
+      // drops the time of day entirely (e.g. renders as just "6/15/25").
       const wb = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: false });
-      const sheet = wb.Sheets[wb.SheetNames[0]];
-      rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false, defval: '' });
+      ({ rows, notes: extraNotes } = pickBestSheet(wb));
+      if (wb.Workbook?.WBProps?.date1904) {
+        extraNotes.push('Workbook uses the 1904 date system (old Mac Excel) — dates may be off by 4 years. Re-export as CSV if so.');
+      }
     } else {
       rows = parseCsv(await file.text());
     }
     lastRows = rows;
     lastFileName = file.name;
-    process(rows, file.name, panel, overrides);
+    process(rows, file.name, panel, overrides, extraNotes);
   } catch (err) {
-    alert(`Could not parse file: ${err.message}`);
+    alert(`Could not parse "${file.name}": ${err.message}`);
   }
 }
 
-function process(rows, fileName, panel, overrides) {
+/**
+ * Try every sheet in the workbook and use the one that parses into the most
+ * interval records — utility exports often put a cover/info sheet first.
+ */
+export function pickBestSheet(wb) {
+  let best = null;
+  const tried = [];
+  for (const name of wb.SheetNames) {
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, raw: true, defval: '' });
+    let count = 0;
+    try {
+      const layout = detectLayout(rows);
+      if (layout) count = extractRecords(rows, layout).records.length;
+    } catch { /* sheet doesn't parse — score stays 0 */ }
+    tried.push(`"${name}" (${count.toLocaleString()} readable rows)`);
+    if (count >= 4 && (!best || count > best.count)) best = { name, rows, count };
+  }
+  if (!best) {
+    throw new Error(
+      `No sheet contained recognizable interval data. Sheets tried: ${tried.join(', ')}. ` +
+      'Expected a header row with date/time + kW or kWh columns (or a date × time-of-day grid).');
+  }
+  const notes = wb.SheetNames.length > 1
+    ? [`Workbook has ${wb.SheetNames.length} sheets — used "${best.name}". Tried: ${tried.join(', ')}.`]
+    : [];
+  return { rows: best.rows, notes };
+}
+
+function process(rows, fileName, panel, overrides, extraNotes = []) {
   const site = getSite();
   try {
     const { normalized, source } = parseIntervalRows(rows, fileName, overrides);
+    source.notes.push(...extraNotes);
     site.intervals.normalized = normalized;
     site.intervals.source = source;
     site.intervals.analysis = analyzeIntervals(normalized);

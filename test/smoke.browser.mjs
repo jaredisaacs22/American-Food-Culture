@@ -30,10 +30,20 @@ if (!libs.chart || !libs.xlsx || !libs.jspdf || !libs.roboto) throw new Error('v
 
 const tab = (id) => page.click(`nav.tabs button[data-tab="${id}"]`);
 
-// --- Tab 1: upload ---
+// --- Tab 1: upload XLSX first (multi-sheet, real date serials), then the CSV ---
+await page.setInputFiles('section[data-tab="intervals"] input[type=file]', 'sample-data/generic_15min_kw.xlsx');
+await page.waitForSelector('table.heatmap', { timeout: 30000 });
+const detection = await page.$eval('section[data-tab="intervals"]', (e) => e.textContent);
+if (!detection.includes('used "Interval Data"')) throw new Error('xlsx multi-sheet note missing from detection summary');
+if (!detection.includes('generic_15min_kw.xlsx')) throw new Error('xlsx file name missing from detection summary');
+console.log('tab 1: xlsx loaded (multi-sheet, date serials)');
+
 await page.setInputFiles('section[data-tab="intervals"] input[type=file]', 'sample-data/sdge_style_long.csv');
+await page.waitForFunction(() =>
+  [...document.querySelectorAll('section[data-tab="intervals"] table.data td')]
+    .some((td) => td.textContent.includes('sdge_style_long.csv')), { timeout: 15000 });
 await page.waitForSelector('table.heatmap', { timeout: 15000 });
-console.log('tab 1: data loaded');
+console.log('tab 1: csv loaded');
 
 // --- Tab 2: pick a 50% shave target, then select the first ≥95% candidate ---
 await tab('sizing');

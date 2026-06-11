@@ -57,7 +57,35 @@ const MDY_DT = /^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})[ ,]+(\d{1,2}):(\d{2})(?
 
 function fixYear(y) { return y < 100 ? y + 2000 : y; }
 
+// ---- Excel support: XLSX cells arrive as date serials (numbers) or Dates ----
+// Excel 1900 system: day 0 = 1899-12-30. The fractional part is time of day.
+// Serials are interpreted as local-naive wall time, same as string timestamps.
+// (1904-system workbooks are detected upstream and flagged to the user.)
+const EXCEL_EPOCH_UTC = Date.UTC(1899, 11, 30);
+const DAY_MS = 86400000;
+
+export function isExcelSerial(v) {
+  // 20000..80000 covers years 1954–2119; interval kW/kWh values that large
+  // never appear in a timestamp column.
+  return typeof v === 'number' && isFinite(v) && v >= 20000 && v < 80000;
+}
+
+export function excelSerialToMs(serial) {
+  // Use UTC arithmetic for the calendar math (DST-proof), then rebuild as
+  // local-naive — consistent with how string timestamps are parsed.
+  const u = new Date(EXCEL_EPOCH_UTC + Math.round(serial * DAY_MS));
+  return new Date(
+    u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate(),
+    u.getUTCHours(), u.getUTCMinutes(), u.getUTCSeconds(),
+  ).getTime();
+}
+
 export function parseDateOnly(s) {
+  if (s instanceof Date) return { y: s.getFullYear(), mo: s.getMonth() + 1, d: s.getDate() };
+  if (isExcelSerial(s)) {
+    const d = new Date(excelSerialToMs(s));
+    return { y: d.getFullYear(), mo: d.getMonth() + 1, d: d.getDate() };
+  }
   s = String(s).trim();
   let m = DATE_MDY.exec(s);
   if (m) return { y: fixYear(+m[3]), mo: +m[1], d: +m[2] };
@@ -67,6 +95,20 @@ export function parseDateOnly(s) {
 }
 
 export function parseTimeOnly(s) {
+  if (s instanceof Date) return { hh: s.getHours(), mm: s.getMinutes() };
+  if (typeof s === 'number' && isFinite(s)) {
+    // Excel time-of-day = fraction of a day; a full datetime serial also
+    // carries its time in the fractional part.
+    if (s >= 0 && s < 1) {
+      const mins = Math.round(s * 1440);
+      return { hh: Math.floor(mins / 60) % 24, mm: mins % 60 };
+    }
+    if (isExcelSerial(s)) {
+      const d = new Date(excelSerialToMs(s));
+      return { hh: d.getHours(), mm: d.getMinutes() };
+    }
+    return null;
+  }
   s = String(s).trim();
   const m = TIME_RE.exec(s);
   if (!m) return null;
@@ -77,8 +119,12 @@ export function parseTimeOnly(s) {
   return { hh, mm: +m[2] };
 }
 
-/** Parse a combined timestamp string -> epoch ms (local), or null. */
+/** Parse a combined timestamp (string, Date, or Excel serial) -> epoch ms (local), or null. */
 export function parseTimestamp(s) {
+  if (s instanceof Date) {
+    return new Date(s.getFullYear(), s.getMonth(), s.getDate(), s.getHours(), s.getMinutes(), s.getSeconds()).getTime();
+  }
+  if (isExcelSerial(s)) return excelSerialToMs(s);
   s = String(s).trim();
   let m = ISO_DT.exec(s);
   if (m) return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0)).getTime();
@@ -96,12 +142,17 @@ export function parseTimestamp(s) {
   return null;
 }
 
+/** Split "0:00-0:15" style ranges to their start; pass non-strings through. */
+function timeStart(v) {
+  return typeof v === 'string' ? v.split('-')[0].trim() : v;
+}
+
 export function combineDateTime(dateStr, timeStr) {
   const d = parseDateOnly(dateStr);
   if (!d) return null;
   const t = timeStr === undefined || timeStr === null || String(timeStr).trim() === ''
     ? { hh: 0, mm: 0 }
-    : parseTimeOnly(String(timeStr).split('-')[0].trim()); // "0:00-0:15" -> start
+    : parseTimeOnly(timeStart(timeStr)); // "0:00-0:15" -> start
   if (!t) return null;
   return new Date(d.y, d.mo - 1, d.d, t.hh, t.mm).getTime();
 }
@@ -139,6 +190,7 @@ function classifyValueHeader(h) {
 }
 
 function looksLikeTimeOfDay(s) {
+  if (typeof s === 'number') return isFinite(s) && s >= 0 && s < 1; // Excel day fraction
   const part = String(s).split('-')[0].trim();
   return parseTimeOnly(part) !== null;
 }
@@ -156,17 +208,19 @@ export function detectLayout(rows) {
     const nonEmpty = row.filter((c) => c.trim() !== '');
     if (nonEmpty.length < 2) continue;
 
-    // Wide format: a date-ish first column + many time-of-day columns
+    // Wide format: a date-ish first column + many time-of-day columns.
+    // Time labels are checked on the RAW cells (Excel headers can be numeric
+    // day-fractions), header words on the stringified ones.
     const timeCols = [];
     for (let c = 1; c < row.length; c++) {
-      if (looksLikeTimeOfDay(row[c])) timeCols.push(c);
+      if (looksLikeTimeOfDay(rows[i][c])) timeCols.push(c);
     }
     if (timeCols.length >= 20 && headerMatches(row[0], [...DATE_HEADERS, ...DATETIME_HEADERS])) {
       const unitGuess = row.map(norm).join(' ').includes('kwh') ? 'kWh'
         : row.map(norm).join(' ').includes('kw') ? 'kW' : null;
       return {
         type: 'wide', headerIdx: i,
-        cols: { date: 0, timeCols, timeLabels: timeCols.map((c) => row[c]) },
+        cols: { date: 0, timeCols, timeLabels: timeCols.map((c) => rows[i][c]) },
         unitGuess, notes,
       };
     }
@@ -231,7 +285,7 @@ export function extractRecords(rows, layout) {
   if (layout.type === 'wide') {
     const { date, timeCols, timeLabels } = layout.cols;
     const offsets = timeLabels.map((t) => {
-      const p = parseTimeOnly(String(t).split('-')[0].trim());
+      const p = parseTimeOnly(timeStart(t));
       return p ? (p.hh * 60 + p.mm) * 60000 : null;
     });
     for (let i = start; i < rows.length; i++) {
@@ -434,7 +488,7 @@ export function parseIntervalRows(rows, fileName = '', overrides = {}) {
 
 function inferWideInterval(layout) {
   const offs = layout.cols.timeLabels
-    .map((t) => parseTimeOnly(String(t).split('-')[0].trim()))
+    .map((t) => parseTimeOnly(timeStart(t)))
     .filter(Boolean)
     .map((p) => p.hh * 60 + p.mm)
     .sort((a, b) => a - b);

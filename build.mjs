@@ -20,6 +20,15 @@ const vendor = ['chart.umd.min.js', 'xlsx.full.min.js', 'jspdf.umd.min.js', 'rob
   .map((f) => readFileSync(`vendor/${f}`, 'utf8'))
   .join('\n;\n');
 
+// A literal "</script>" inside inlined code would terminate the script tag
+// early and silently truncate the app — refuse to build one.
+for (const [name, code] of [['vendor', vendor], ['app', js], ['css', css]]) {
+  if (/<\/script/i.test(code)) {
+    console.error(`Build failed: inlined ${name} code contains "</script" — escape it before inlining`);
+    process.exit(1);
+  }
+}
+
 const html = template
   .replace('/*__INLINE_CSS__*/', () => css)
   .replace('/*__VENDOR_JS__*/', () => vendor)

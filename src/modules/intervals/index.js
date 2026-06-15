@@ -8,6 +8,7 @@ import { getSite, notify, subscribe } from '../../model/store.js';
 import { parseCsv, parseIntervalRows, detectLayout, extractRecords } from './parser.js';
 import { analyzeIntervals, worstDayProfile } from './analysis.js';
 import { renderDurationCurve, renderMonthlyPeaks, renderDayProfile } from './charts.js';
+import { profileLibrary, loadReferenceProfile } from './profiles.js';
 
 let lastRows = null; // raw parsed rows kept module-local for re-processing with overrides
 let lastFileName = '';
@@ -28,6 +29,7 @@ function render(panel) {
   const site = getSite();
 
   panel.append(uploadPanel(panel));
+  panel.append(referencePanel(panel));
 
   if (site.intervals.source) panel.append(detectionPanel(panel));
 
@@ -69,6 +71,59 @@ function uploadPanel(panel) {
   });
 
   return el('div', { class: 'panel' }, el('h2', {}, 'Interval Data Upload'), dz, input);
+}
+
+// ---------------------------------------------------------------------------
+// Reference building profiles (NREL ComStock) — for sites without real data
+// ---------------------------------------------------------------------------
+
+function referencePanel(panel) {
+  const lib = profileLibrary();
+
+  const stateSel = el('select', {}, ...lib.states.map((s) => el('option', { value: s }, s)));
+  const typeSel = el('select', {}, ...lib.buildingTypes.map((t) => el('option', { value: t.id }, t.label)));
+  const modeSel = el('select', {},
+    el('option', { value: 'peakKw' }, 'Peak demand (kW)'),
+    el('option', { value: 'annualKwh' }, 'Annual energy (kWh)'));
+  const valInput = el('input', { type: 'number', min: 1, step: 50, value: 500, style: 'width:120px' });
+
+  const loadBtn = el('button', { class: 'action', onclick: () => {
+    const key = `${stateSel.value}:${typeSel.value}`;
+    if (!lib.profiles[key]) { alert('That building type is not bundled for this state.'); return; }
+    const value = +valInput.value;
+    if (!(value > 0)) { alert('Enter a positive value to scale the profile.'); return; }
+    try {
+      const { normalized, source } = loadReferenceProfile(stateSel.value, typeSel.value, { mode: modeSel.value, value });
+      const site = getSite();
+      lastRows = null; lastFileName = '';
+      site.intervals.normalized = normalized;
+      site.intervals.source = source;
+      site.intervals.analysis = analyzeIntervals(normalized);
+      // Pre-fill site utility hint from the state if empty
+      notify({ intervals: true });
+      render(panel);
+    } catch (err) {
+      alert(`Could not load reference profile: ${err.message}`);
+    }
+  } }, 'Load reference profile');
+
+  return el('div', { class: 'panel' },
+    el('h2', {}, 'Or Start From a Reference Building Profile'),
+    el('p', { class: 'muted' },
+      'No interval data yet? Load a normalized load shape from ', el('b', {}, 'NREL ComStock'),
+      ' (DOE building-stock models, 15-min, weather year ', String(lib.meta.weatherYear), ') and scale it to the site. ',
+      el('span', { class: 'placeholder-tag' }, 'REFERENCE SHAPE'),
+      ' Replace with the customer’s actual meter data before quoting.'),
+    el('div', {},
+      el('label', { class: 'field' }, 'State:', stateSel),
+      el('label', { class: 'field' }, 'Building type:', typeSel),
+      el('label', { class: 'field' }, 'Scale by:', modeSel, valInput),
+      loadBtn,
+    ),
+    el('p', { class: 'muted', style: 'margin:6px 0 0' },
+      `Source: ${lib.meta.source}, ${lib.meta.release} (retrieved ${lib.meta.retrievedAt}). `,
+      'State-aggregate shape, not a single building — used purely for its normalized hourly/seasonal pattern.'),
+  );
 }
 
 async function handleFile(file, panel, overrides = {}) {

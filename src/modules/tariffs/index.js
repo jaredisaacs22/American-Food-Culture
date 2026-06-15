@@ -6,16 +6,26 @@
 import { el, clear, fmt } from '../../ui/dom.js';
 import { getSite, getTariffLibrary, setTariffLibrary, notify, subscribe } from '../../model/store.js';
 import { seedTariffLibrary, computeTariffSavings } from './calc.js';
+import usurdbTariffs from '../../data/usurdb-tariffs.json' with { type: 'json' };
+
+// Default library = real USURDB-derived schedules (sourced, flagged "verify"),
+// with the generic hand-built placeholders kept as a fallback for utilities
+// outside the bundled states.
+function defaultLibrary() {
+  return [...usurdbTariffs.map((t) => ({ ...t })), ...seedTariffLibrary()];
+}
+
+let utilityFilter = 'all';
 
 export default {
   id: 'tariffs',
   title: '4. Tariffs',
   mount(panel) {
-    if (!getTariffLibrary().length) setTariffLibrary(seedTariffLibrary());
+    if (!getTariffLibrary().length) setTariffLibrary(defaultLibrary());
     render(panel);
     subscribe((change) => {
       if (change.workspaceLoaded || change.dispatch) {
-        if (!getTariffLibrary().length) setTariffLibrary(seedTariffLibrary());
+        if (!getTariffLibrary().length) setTariffLibrary(defaultLibrary());
         render(panel);
       }
     });
@@ -42,9 +52,22 @@ function render(panel) {
 // ---------------------------------------------------------------------------
 
 function libraryPanel(panel, site, lib) {
+  const utilities = [...new Set(lib.map((t) => t.utility))].sort();
+  if (utilityFilter !== 'all' && !utilities.includes(utilityFilter)) utilityFilter = 'all';
+  const shown = utilityFilter === 'all' ? lib : lib.filter((t) => t.utility === utilityFilter);
+
+  const filterSel = el('select', {},
+    el('option', { value: 'all' }, `All utilities (${lib.length})`),
+    ...utilities.map((u) => {
+      const o = el('option', { value: u }, `${u} (${lib.filter((t) => t.utility === u).length})`);
+      if (u === utilityFilter) o.selected = true;
+      return o;
+    }));
+  filterSel.addEventListener('change', () => { utilityFilter = filterSel.value; render(panel); });
+
   const header = el('tr', {}, ...['', 'Utility', 'Schedule', 'Facilities $/kW-mo', 'On-pk summer $/kW-mo', 'Ratchet', 'Status', '']
     .map((h) => el('th', {}, h)));
-  const rows = lib.map((t) => {
+  const rows = shown.map((t) => {
     const isSel = t.id === site.tariff.selectedId;
     const pick = el('button', { class: isSel ? 'action' : 'ghost-sm', onclick: () => {
       site.tariff.selectedId = t.id;
@@ -91,7 +114,12 @@ function libraryPanel(panel, site, lib) {
   return el('div', { class: 'panel' },
     el('h2', {}, 'Tariff Library'),
     el('p', { class: 'warn' },
-      '⚠ Seeded schedules contain PLACEHOLDER numbers, not verified filed rates. Correct them before quoting savings.'),
+      '⚠ Rates are auto-derived from the OpenEI USURDB (or generic placeholders) and flagged ',
+      el('span', { class: 'placeholder-tag' }, 'PLACEHOLDER'),
+      ' — verify against the filed tariff sheet before quoting. Mark a schedule verified in its editor once confirmed.'),
+    el('div', { style: 'margin-bottom:8px' },
+      el('label', { class: 'field' }, 'Filter by utility:', filterSel),
+      el('span', { class: 'muted' }, `Showing ${shown.length} of ${lib.length} schedules.`)),
     el('table', { class: 'data', style: 'max-width:980px' }, header, ...rows),
     el('div', { style: 'margin-top:8px' }, addBtn),
   );

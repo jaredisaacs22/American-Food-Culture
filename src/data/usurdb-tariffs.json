@@ -1,0 +1,5252 @@
+[
+  {
+    "id": "usurdb-539f6ae9ec4f024411ec95c5",
+    "utility": "Western Massachusetts Elec Co",
+    "schedule": "Rate T-2 Large Primary Service Time-Of-Use-customer 350 to 1000kW",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "539f6ae9ec4f024411ec95c5",
+    "startdate": "2014-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 539f6ae9ec4f024411ec95c5 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 13.46,
+      "onPeakWinterKwMo": 13.46
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0918,
+        "winterRate": 0.0918
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.09,
+      "winterRate": 0.09
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-539fbd48ec4f024c27d879d7",
+    "utility": "Western Massachusetts Elec Co",
+    "schedule": "Rate T-2 Large Primary Service Time-Of-Use-Customer 1500 to 2500kW",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "539fbd48ec4f024c27d879d7",
+    "startdate": "2014-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 539fbd48ec4f024c27d879d7 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 13.46,
+      "onPeakWinterKwMo": 13.46
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0918,
+        "winterRate": 0.0918
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.09,
+      "winterRate": 0.09
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-539fbdd9ec4f024c27d87fbb",
+    "utility": "Western Massachusetts Elec Co",
+    "schedule": "Rate T-2 Large Primary Service Time-Of-Use-Customer 1000 to 1500kW",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "539fbdd9ec4f024c27d87fbb",
+    "startdate": "2014-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 539fbdd9ec4f024c27d87fbb (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 13.46,
+      "onPeakWinterKwMo": 13.46
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0918,
+        "winterRate": 0.0918
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.09,
+      "winterRate": 0.09
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-539fcae8ec4f024d2f54004c",
+    "utility": "Western Massachusetts Elec Co",
+    "schedule": "Rate T-5 Extra Large Primary Service Time-Of-Use-Customer 2500kW",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "539fcae8ec4f024d2f54004c",
+    "startdate": "2014-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 539fcae8ec4f024d2f54004c (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 10.65,
+      "onPeakWinterKwMo": 10.65
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0907,
+        "winterRate": 0.0907
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0889,
+      "winterRate": 0.0889
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-539fb9d8ec4f024bc1dc276b",
+    "utility": "Western Massachusetts Elec Co",
+    "schedule": "Rate T-4 Primary General Service Time-Of-Use",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "539fb9d8ec4f024bc1dc276b",
+    "startdate": "2014-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 539fb9d8ec4f024bc1dc276b (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 7.72,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0947,
+        "winterRate": 0.0947
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0928,
+      "winterRate": 0.0928
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-539f74f4ec4f024411ed0e4b",
+    "utility": "Western Massachusetts Elec Co",
+    "schedule": "Rate G-2 Primary General Service",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "539f74f4ec4f024411ed0e4b",
+    "startdate": "2014-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 539f74f4ec4f024411ed0e4b (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 7.37,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0938,
+        "winterRate": 0.0938
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0938,
+      "winterRate": 0.0938
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-55942fba5457a3ad34ce826d",
+    "utility": "Orange & Rockland Utils Inc",
+    "schedule": "SC20 General Secondary Optional Time-of-Use Service - Bundled",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "55942fba5457a3ad34ce826d",
+    "startdate": "2015-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 55942fba5457a3ad34ce826d (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 20.42,
+      "onPeakWinterKwMo": 8.81
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 10,
+        "endHour": 21,
+        "summerRate": 0.1333,
+        "winterRate": 0.1333
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 13,
+        "endHour": 19,
+        "summerRate": 0.1938,
+        "winterRate": 0.1938
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1058,
+      "winterRate": 0.1058
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-559436bb5457a34034ce826e",
+    "utility": "Orange & Rockland Utils Inc",
+    "schedule": "SC21 General Primary Optional Time-of-use Service - unbundled",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "559436bb5457a34034ce826e",
+    "startdate": "2015-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 559436bb5457a34034ce826e (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 24.1,
+      "onPeakWinterKwMo": 8.5
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 10,
+        "endHour": 22,
+        "summerRate": 0.0153,
+        "winterRate": 0.0153
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 13,
+        "endHour": 19,
+        "summerRate": 0.0153,
+        "winterRate": 0.0153
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0041,
+      "winterRate": 0.0041
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-539fb89bec4f024bc1dc1937",
+    "utility": "Orange & Rockland Utils Inc",
+    "schedule": "SC20 General Secondary Optional Time-of-Use Service - Unbundled",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "539fb89bec4f024bc1dc1937",
+    "startdate": "2014-01-01 06:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 539fb89bec4f024bc1dc1937 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 19.31,
+      "onPeakWinterKwMo": 8.48
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 10,
+        "endHour": 22,
+        "summerRate": 0.0286,
+        "winterRate": 0.0286
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 13,
+        "endHour": 19,
+        "summerRate": 0.0861,
+        "winterRate": 0.0861
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0129,
+      "winterRate": 0.0129
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-559438e85457a3a634ce826e",
+    "utility": "Orange & Rockland Utils Inc",
+    "schedule": "SC22 Large Commercial Service over 1000kW Primary - Unbundled",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "559438e85457a3a634ce826e",
+    "startdate": "2015-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 559438e85457a3a634ce826e (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 11.88,
+      "onPeakWinterKwMo": 6.79
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 23,
+        "summerRate": 0.0156,
+        "winterRate": 0.0156
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 23,
+        "summerRate": 0.0156,
+        "winterRate": 0.0156
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0064,
+      "winterRate": 0.0064
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-559402b75457a3a634ce826c",
+    "utility": "Orange & Rockland Utils Inc",
+    "schedule": "SC9 General Commercial Service over 1000kW primary service - bundled",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "559402b75457a3a634ce826c",
+    "startdate": "2015-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 559402b75457a3a634ce826c (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 14.76,
+      "onPeakWinterKwMo": 6.92
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 11,
+        "summerRate": 0.1006,
+        "winterRate": 0.1006
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 11,
+        "summerRate": 0.1006,
+        "winterRate": 0.1006
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0903,
+      "winterRate": 0.0903
+    },
+    "ratchet": {
+      "enabled": true,
+      "pct": 0.4
+    }
+  },
+  {
+    "id": "usurdb-559409ba5457a3dc34ce826d",
+    "utility": "Orange & Rockland Utils Inc",
+    "schedule": "SC9 General Commercial Service over 1000kW primary service - Unbundled",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "559409ba5457a3dc34ce826d",
+    "startdate": "2015-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 559409ba5457a3dc34ce826d (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 14.76,
+      "onPeakWinterKwMo": 6.92
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 23,
+        "summerRate": 0.0255,
+        "winterRate": 0.0255
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 23,
+        "summerRate": 0.0255,
+        "winterRate": 0.0255
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0152,
+      "winterRate": 0.0152
+    },
+    "ratchet": {
+      "enabled": true,
+      "pct": 0.4
+    }
+  },
+  {
+    "id": "usurdb-559439cb5457a3be34ce8272",
+    "utility": "Orange & Rockland Utils Inc",
+    "schedule": "SC22 Large Commercial Service over 1000kW Substation - Unbundled",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "559439cb5457a3be34ce8272",
+    "startdate": "2015-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 559439cb5457a3be34ce8272 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 8.08,
+      "onPeakWinterKwMo": 4.45
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 23,
+        "summerRate": 0.0092,
+        "winterRate": 0.0092
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 23,
+        "summerRate": 0.0092,
+        "winterRate": 0.0092
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0059,
+      "winterRate": 0.0059
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-55943a165457a3f258ce826c",
+    "utility": "Orange & Rockland Utils Inc",
+    "schedule": "SC22 Large Commercial Service over 1000kW Transmission - Unbundled Retail",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "55943a165457a3f258ce826c",
+    "startdate": "2015-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 55943a165457a3f258ce826c (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 4.82,
+      "onPeakWinterKwMo": 4.21
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 23,
+        "summerRate": 0.0058,
+        "winterRate": 0.0058
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 23,
+        "summerRate": 0.0058,
+        "winterRate": 0.0058
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0052,
+      "winterRate": 0.0052
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-54eb6b5e5357a3f717d31519",
+    "utility": "Rockland Electric Co (New Jersey)",
+    "schedule": "Large General TOU Service (Transmission)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "54eb6b5e5357a3f717d31519",
+    "startdate": "2015-02-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 54eb6b5e5357a3f717d31519 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 0.366,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 22,
+        "endHour": 10,
+        "summerRate": 0.0174,
+        "winterRate": 0.0174
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 10,
+        "endHour": 22,
+        "summerRate": 0.0192,
+        "winterRate": 0.0192
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.005,
+      "winterRate": 0.005
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-54eb554f5357a36018d31519",
+    "utility": "Rockland Electric Co (New Jersey)",
+    "schedule": "General Service- Secondary Service",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "54eb554f5357a36018d31519",
+    "startdate": "2015-02-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 54eb554f5357a36018d31519 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9); no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 1,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0413,
+        "winterRate": 0.0413
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0413,
+      "winterRate": 0.0413
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-56b920015457a3642c48d235",
+    "utility": "Southern California Edison Co",
+    "schedule": "Time of Use, General Service, Demand Metered, Critical Peak Option: TOU-GS-2 CPP, Three Phase (2kV - 50kV)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "56b920015457a3642c48d235",
+    "startdate": "2016-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 56b920015457a3642c48d235 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 13.02,
+      "onPeakSummerKwMo": 17.67,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.091,
+        "winterRate": 0.091
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 12,
+        "endHour": 18,
+        "summerRate": 0.1318,
+        "winterRate": 0.1318
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0691,
+      "winterRate": 0.0691
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-56b9228a5457a3030348d234",
+    "utility": "Southern California Edison Co",
+    "schedule": "Time of Use, General Service, Demand Metered, Critical Peak Option: TOU-GS-2 CPP, Three Phase (At 220kV)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "56b9228a5457a3030348d234",
+    "startdate": "2016-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 56b9228a5457a3030348d234 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 3.24,
+      "onPeakSummerKwMo": 17.67,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.0897,
+        "winterRate": 0.0897
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 12,
+        "endHour": 18,
+        "summerRate": 0.1305,
+        "winterRate": 0.1305
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0678,
+      "winterRate": 0.0678
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-56b923655457a3d41f48d233",
+    "utility": "Southern California Edison Co",
+    "schedule": "Time of Use, General Service, Demand Metered, Critical Peak Option: TOU-GS-2 CPP, Single Phase (50kV - 220kV)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "56b923655457a3d41f48d233",
+    "startdate": "2016-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 56b923655457a3d41f48d233 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 7.42,
+      "onPeakSummerKwMo": 17.67,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.0897,
+        "winterRate": 0.0897
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 12,
+        "endHour": 18,
+        "summerRate": 0.1305,
+        "winterRate": 0.1305
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0678,
+      "winterRate": 0.0678
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-56b924a65457a3d41f48d234",
+    "utility": "Southern California Edison Co",
+    "schedule": "Time of Use, General Service, Demand Metered, Critical Peak Option: TOU-GS-2 CPP, Three Phase (50kV - 220kV)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "56b924a65457a3d41f48d234",
+    "startdate": "2016-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 56b924a65457a3d41f48d234 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 7.42,
+      "onPeakSummerKwMo": 17.67,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.0897,
+        "winterRate": 0.0897
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 12,
+        "endHour": 18,
+        "summerRate": 0.1305,
+        "winterRate": 0.1305
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0678,
+      "winterRate": 0.0678
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-56b925f55457a3642c48d236",
+    "utility": "Southern California Edison Co",
+    "schedule": "Time of Use, General Service, Demand Metered, Critical Peak Option: TOU-GS-2 CPP, Single Phase (At 220kV)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "56b925f55457a3642c48d236",
+    "startdate": "2016-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 56b925f55457a3642c48d236 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 3.24,
+      "onPeakSummerKwMo": 17.67,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.0897,
+        "winterRate": 0.0897
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 12,
+        "endHour": 18,
+        "summerRate": 0.1305,
+        "winterRate": 0.1305
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0678,
+      "winterRate": 0.0678
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-56b926e15457a3a07f48d234",
+    "utility": "Southern California Edison Co",
+    "schedule": "Time of Use, General Service, Demand Metered, Critical Peak Option: TOU-GS-2 CPP, Three Phase (Under 2kV)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "56b926e15457a3a07f48d234",
+    "startdate": "2016-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 56b926e15457a3a07f48d234 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 13.2,
+      "onPeakSummerKwMo": 17.67,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.0921,
+        "winterRate": 0.0921
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 12,
+        "endHour": 18,
+        "summerRate": 0.1329,
+        "winterRate": 0.1329
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0701,
+      "winterRate": 0.0701
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-56b927935457a3030348d235",
+    "utility": "Southern California Edison Co",
+    "schedule": "Time of Use, General Service, Demand Metered, Critical Peak Option: TOU-GS-2 CPP, Single Phase (Under 2kV)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "56b927935457a3030348d235",
+    "startdate": "2016-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 56b927935457a3030348d235 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 13.2,
+      "onPeakSummerKwMo": 17.67,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.0921,
+        "winterRate": 0.0921
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 12,
+        "endHour": 18,
+        "summerRate": 0.1329,
+        "winterRate": 0.1329
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0701,
+      "winterRate": 0.0701
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-56b928505457a3502c48d234",
+    "utility": "Southern California Edison Co",
+    "schedule": "Time of Use, General Service, Demand Metered, Critical Peak Option: TOU-GS-2 CPP, Single Phase (2kv-50kv)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "56b928505457a3502c48d234",
+    "startdate": "2016-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 56b928505457a3502c48d234 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 13.02,
+      "onPeakSummerKwMo": 17.67,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.091,
+        "winterRate": 0.091
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 12,
+        "endHour": 18,
+        "summerRate": 0.1318,
+        "winterRate": 0.1318
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0691,
+      "winterRate": 0.0691
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67be08be997764b245041d42",
+    "utility": "Niagara Mohawk Power Corp.",
+    "schedule": "SC3 - Large General Service, under 2.2 kV (Unbundled - Secondary)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67be08be997764b245041d42",
+    "startdate": "2025-01-30 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67be08be997764b245041d42 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 497.8685,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0027,
+        "winterRate": 0.0027
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0027,
+      "winterRate": 0.0027
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67be08cb715f5f4b960b487d",
+    "utility": "Niagara Mohawk Power Corp.",
+    "schedule": "SC3 - Large General Service, under 2.2 kV (Unbundled - Primary)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67be08cb715f5f4b960b487d",
+    "startdate": "2025-01-30 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67be08cb715f5f4b960b487d (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 497.8585,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0034,
+        "winterRate": 0.0034
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0034,
+      "winterRate": 0.0034
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67be11d301ca3937950b518d",
+    "utility": "Niagara Mohawk Power Corp.",
+    "schedule": "SC3 - Large General Service, 2.2-15 kV (Unbundled - Secondary)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67be11d301ca3937950b518d",
+    "startdate": "2025-01-30 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67be11d301ca3937950b518d (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 450.8224,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0027,
+        "winterRate": 0.0027
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0027,
+      "winterRate": 0.0027
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67be11df01ca3937950b518e",
+    "utility": "Niagara Mohawk Power Corp.",
+    "schedule": "SC3 - Large General Service, 2.2-15 kV (Unbundled - Primary)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67be11df01ca3937950b518e",
+    "startdate": "2025-01-30 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67be11df01ca3937950b518e (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 450.8124,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0034,
+        "winterRate": 0.0034
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0034,
+      "winterRate": 0.0034
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67be1c1201ca3937950b5190",
+    "utility": "Niagara Mohawk Power Corp.",
+    "schedule": "SC3 - Large General Service, 22-50 kV (Unbundled - Secondary)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67be1c1201ca3937950b5190",
+    "startdate": "2025-01-30 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67be1c1201ca3937950b5190 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 140.3981,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0027,
+        "winterRate": 0.0027
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0027,
+      "winterRate": 0.0027
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67be1c1adefa2cd03006bfa8",
+    "utility": "Niagara Mohawk Power Corp.",
+    "schedule": "SC3 - Large General Service, 22-50 kV (Unbundled - Primary)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67be1c1adefa2cd03006bfa8",
+    "startdate": "2025-01-30 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67be1c1adefa2cd03006bfa8 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 140.3881,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0034,
+        "winterRate": 0.0034
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0034,
+      "winterRate": 0.0034
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67be1d677220238a0106470e",
+    "utility": "Niagara Mohawk Power Corp.",
+    "schedule": "SC3 - Large General Service, over 60 kV (Unbundled- Primary)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67be1d677220238a0106470e",
+    "startdate": "2025-01-30 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67be1d677220238a0106470e (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 140.3881,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0034,
+        "winterRate": 0.0034
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0034,
+      "winterRate": 0.0034
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67be1d6b7220238a0106470f",
+    "utility": "Niagara Mohawk Power Corp.",
+    "schedule": "SC3 - Large General Service, over 60 kV (Unbundled- Secondary)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67be1d6b7220238a0106470f",
+    "startdate": "2025-01-30 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67be1d6b7220238a0106470f (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 140.3981,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0027,
+        "winterRate": 0.0027
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0027,
+      "winterRate": 0.0027
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-68a0507c18cc45e4980c6e92",
+    "utility": "Atlantic City Electric Co",
+    "schedule": "AGS Secondary- BGS-RSCP",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "68a0507c18cc45e4980c6e92",
+    "startdate": "2025-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 68a0507c18cc45e4980c6e92 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9); no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 20.44,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.1438,
+        "winterRate": 0.1438
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1438,
+      "winterRate": 0.1438
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-68a050df6d6870e1a00e855c",
+    "utility": "Atlantic City Electric Co",
+    "schedule": "AGS Secondary (Delivery Service)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "68a050df6d6870e1a00e855c",
+    "startdate": "2025-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 68a050df6d6870e1a00e855c (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 20.44,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.018,
+        "winterRate": 0.018
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.018,
+      "winterRate": 0.018
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-68a0534fa6301ca89e08ed5a",
+    "utility": "Atlantic City Electric Co",
+    "schedule": "AGS Primary (Delivery Service)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "68a0534fa6301ca89e08ed5a",
+    "startdate": "2025-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 68a0534fa6301ca89e08ed5a (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 19.63,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0178,
+        "winterRate": 0.0178
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0178,
+      "winterRate": 0.0178
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-68a0546418cc45e4980c6e94",
+    "utility": "Atlantic City Electric Co",
+    "schedule": "AGS Primary BGS-RSCP",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "68a0546418cc45e4980c6e94",
+    "startdate": "2025-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 68a0546418cc45e4980c6e94 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9); no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 19.63,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.2286,
+        "winterRate": 0.2286
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.2286,
+      "winterRate": 0.2286
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-59bac7295457a3055742da68",
+    "utility": "Atlantic City Electric Co",
+    "schedule": "AGS Secondary- BGS-RSCP",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "59bac7295457a3055742da68",
+    "startdate": "2017-08-31 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 59bac7295457a3055742da68 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 12.39,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0341,
+        "winterRate": 0.0341
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0341,
+      "winterRate": 0.0341
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-59bac4765457a3055742da67",
+    "utility": "Atlantic City Electric Co",
+    "schedule": "AGS Primary BGS-RSCP",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "59bac4765457a3055742da67",
+    "startdate": "2017-08-31 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 59bac4765457a3055742da67 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 10.82,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0668,
+        "winterRate": 0.0668
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0668,
+      "winterRate": 0.0668
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-68a051d9a5efa3bd570a59f2",
+    "utility": "Atlantic City Electric Co",
+    "schedule": "MGS Secondary- Three Phase - BGS-RSCP",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "68a051d9a5efa3bd570a59f2",
+    "startdate": "2025-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 68a051d9a5efa3bd570a59f2 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9); no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 2.91,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.1894,
+        "winterRate": 0.1894
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1894,
+      "winterRate": 0.1894
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-68a0521da6301ca89e08ed59",
+    "utility": "Atlantic City Electric Co",
+    "schedule": "MGS Secondary Three Phase (Delivery Service)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "68a0521da6301ca89e08ed59",
+    "startdate": "2025-07-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 68a0521da6301ca89e08ed59 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9); no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 2.91,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0679,
+        "winterRate": 0.0679
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0679,
+      "winterRate": 0.0679
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-663bd3e0cfc95f8fb40b7c9c",
+    "utility": "Long Island Power Authority",
+    "schedule": "282 (Large General Service Primary Time-Of-Use)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "663bd3e0cfc95f8fb40b7c9c",
+    "startdate": "2022-05-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 663bd3e0cfc95f8fb40b7c9c (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; on-peak had multiple disjoint hour-runs, longest was used. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 6.44,
+      "onPeakWinterKwMo": 6.44
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 12,
+        "summerRate": 0.0555,
+        "winterRate": 0.0555
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0509,
+        "winterRate": 0.0509
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0303,
+      "winterRate": 0.0303
+    },
+    "ratchet": {
+      "enabled": true,
+      "pct": 0.7
+    }
+  },
+  {
+    "id": "usurdb-663bdf579a2f77ee16037bc8",
+    "utility": "Long Island Power Authority",
+    "schedule": "282 (Large General Service Secondary Time-Of-Use)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "663bdf579a2f77ee16037bc8",
+    "startdate": "2024-05-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 663bdf579a2f77ee16037bc8 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; on-peak had multiple disjoint hour-runs, longest was used. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 5.85,
+      "onPeakWinterKwMo": 5.85
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 12,
+        "summerRate": 1.4809,
+        "winterRate": 1.4809
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.1773,
+        "winterRate": 0.1773
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1493,
+      "winterRate": 0.1493
+    },
+    "ratchet": {
+      "enabled": true,
+      "pct": 0.7
+    }
+  },
+  {
+    "id": "usurdb-663bdf5c9a2f77ee16037bc9",
+    "utility": "Long Island Power Authority",
+    "schedule": "282 (Large General Service Secondary Time-Of-Use)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "663bdf5c9a2f77ee16037bc9",
+    "startdate": "2024-05-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 663bdf5c9a2f77ee16037bc9 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9); on-peak had multiple disjoint hour-runs, longest was used. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 5.85,
+      "onPeakWinterKwMo": 5.85
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 12,
+        "summerRate": 0.0534,
+        "winterRate": 0.0534
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0587,
+        "winterRate": 0.0587
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0307,
+      "winterRate": 0.0307
+    },
+    "ratchet": {
+      "enabled": true,
+      "pct": 0.7
+    }
+  },
+  {
+    "id": "usurdb-663bd3dbda0b7f2b5808f9b0",
+    "utility": "Long Island Power Authority",
+    "schedule": "282 (Large General Service Primary Time-Of-Use)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "663bd3dbda0b7f2b5808f9b0",
+    "startdate": "2024-05-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 663bd3dbda0b7f2b5808f9b0 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; on-peak had multiple disjoint hour-runs, longest was used. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 5.6,
+      "onPeakWinterKwMo": 5.6
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 12,
+        "summerRate": 0.1742,
+        "winterRate": 0.1742
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.1695,
+        "winterRate": 0.1695
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.149,
+      "winterRate": 0.149
+    },
+    "ratchet": {
+      "enabled": true,
+      "pct": 0.7
+    }
+  },
+  {
+    "id": "usurdb-69782073db94c6a1d700f268",
+    "utility": "Long Island Power Authority",
+    "schedule": "285 - Secondary",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69782073db94c6a1d700f268",
+    "startdate": "2026-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69782073db94c6a1d700f268 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9); on-peak had multiple disjoint hour-runs, longest was used. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 13.03,
+      "onPeakWinterKwMo": 13.03
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 10,
+        "summerRate": 0.0591,
+        "winterRate": 0.0591
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 10,
+        "endHour": 22,
+        "summerRate": 0.0781,
+        "winterRate": 0.0781
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0335,
+      "winterRate": 0.0335
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-697821cde88e8b9bd2094fe9",
+    "utility": "Long Island Power Authority",
+    "schedule": "285 - Secondary",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "697821cde88e8b9bd2094fe9",
+    "startdate": "2026-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 697821cde88e8b9bd2094fe9 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9); on-peak had multiple disjoint hour-runs, longest was used. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 13.03,
+      "onPeakWinterKwMo": 13.03
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 10,
+        "summerRate": 0.1889,
+        "winterRate": 0.1889
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 10,
+        "endHour": 22,
+        "summerRate": 0.2079,
+        "winterRate": 0.2079
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1633,
+      "winterRate": 0.1633
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-697801cf0f1fa7fd8d0e7b48",
+    "utility": "Long Island Power Authority",
+    "schedule": "284 - Secondary Service",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "697801cf0f1fa7fd8d0e7b48",
+    "startdate": "2026-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 697801cf0f1fa7fd8d0e7b48 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9); on-peak had multiple disjoint hour-runs, longest was used. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 11.68,
+      "onPeakWinterKwMo": 11.68
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 12,
+        "summerRate": 0.0545,
+        "winterRate": 0.0545
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0704,
+        "winterRate": 0.0704
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.026,
+      "winterRate": 0.026
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-697802703832714bb307e13c",
+    "utility": "Long Island Power Authority",
+    "schedule": "284 - Secondary Service",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "697802703832714bb307e13c",
+    "startdate": "2026-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 697802703832714bb307e13c (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9); on-peak had multiple disjoint hour-runs, longest was used. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 11.68,
+      "onPeakWinterKwMo": 11.68
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 12,
+        "summerRate": 0.1843,
+        "winterRate": 0.1843
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.2002,
+        "winterRate": 0.2002
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1558,
+      "winterRate": 0.1558
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-6393788261d25403340449f5",
+    "utility": "NSTAR Electric Company",
+    "schedule": "Western Massachusetts Large Primary Service Time-Of-Use  T-2 (Greater than 1500kW)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "6393788261d25403340449f5",
+    "startdate": "2022-09-30 23:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 6393788261d25403340449f5 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 19,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0215,
+        "winterRate": 0.0215
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0194,
+      "winterRate": 0.0194
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-63937a8b28d17553280e33bf",
+    "utility": "NSTAR Electric Company",
+    "schedule": "Western Massachusetts Large Primary Service Time-Of-Use  T-2 (Greater than 1500kW)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "63937a8b28d17553280e33bf",
+    "startdate": "2022-09-30 23:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 63937a8b28d17553280e33bf (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 19,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.2182,
+        "winterRate": 0.2182
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.2161,
+      "winterRate": 0.2161
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-6393809a2f8289f75c0456c7",
+    "utility": "NSTAR Electric Company",
+    "schedule": "Western Massachusetts Large Primary Service Time-Of-Use T-2 (1000-1500 kW)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "6393809a2f8289f75c0456c7",
+    "startdate": "2022-09-30 23:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 6393809a2f8289f75c0456c7 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 19,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0215,
+        "winterRate": 0.0215
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0194,
+      "winterRate": 0.0194
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-639381fa61d25403340449f6",
+    "utility": "NSTAR Electric Company",
+    "schedule": "Western Massachusetts Large Primary Service Time-Of-Use T-2 (1000-1500 kW)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "639381fa61d25403340449f6",
+    "startdate": "2022-09-30 23:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 639381fa61d25403340449f6 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 19,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.2182,
+        "winterRate": 0.2182
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.2161,
+      "winterRate": 0.2161
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-639384ed5a2d40315a0e7521",
+    "utility": "NSTAR Electric Company",
+    "schedule": "Western Massachusetts Large Primary Service Time-Of-Use T-2 (350-1000 kW)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "639384ed5a2d40315a0e7521",
+    "startdate": "2022-09-30 23:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 639384ed5a2d40315a0e7521 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 19,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0215,
+        "winterRate": 0.0215
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0194,
+      "winterRate": 0.0194
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-6393852c051db980fe0c1f20",
+    "utility": "NSTAR Electric Company",
+    "schedule": "Western Massachusetts Large Primary Service Time-Of-Use T-2 (350-1000 kW)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "6393852c051db980fe0c1f20",
+    "startdate": "2022-09-30 23:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 6393852c051db980fe0c1f20 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 19,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.2182,
+        "winterRate": 0.2182
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.2161,
+      "winterRate": 0.2161
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-6989322b50272414cb041773",
+    "utility": "NSTAR Electric Company",
+    "schedule": "South Shore Optional General Time-of-Use G-7 BS (55)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "6989322b50272414cb041773",
+    "startdate": "2026-02-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 6989322b50272414cb041773 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 4.71,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 9,
+        "endHour": 18,
+        "summerRate": 0.1164,
+        "winterRate": 0.1164
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1067,
+      "winterRate": 0.1067
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-698932e350272414cb041774",
+    "utility": "NSTAR Electric Company",
+    "schedule": "South Shore Optional General Time-of-Use G-7 BS (55)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "698932e350272414cb041774",
+    "startdate": "2026-02-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 698932e350272414cb041774 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 4.71,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 9,
+        "endHour": 18,
+        "summerRate": 0.2874,
+        "winterRate": 0.2874
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.2777,
+      "winterRate": 0.2777
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-6772f01a8322c2ebdc04e77d",
+    "utility": "San Diego Gas & Electric Co",
+    "schedule": "AL-TOU Secondary (0-500kW)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "6772f01a8322c2ebdc04e77d",
+    "startdate": "2024-09-30 23:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 6772f01a8322c2ebdc04e77d (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 30.63,
+      "onPeakSummerKwMo": 45.61,
+      "onPeakWinterKwMo": 32.93
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2399,
+        "winterRate": 0.2399
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2284,
+        "winterRate": 0.2284
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1147,
+      "winterRate": 0.1147
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-6772f0268322c2ebdc04e77e",
+    "utility": "San Diego Gas & Electric Co",
+    "schedule": "AL-TOU Secondary (Above 500kW)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "6772f0268322c2ebdc04e77e",
+    "startdate": "2024-09-30 23:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 6772f0268322c2ebdc04e77e (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 30.63,
+      "onPeakSummerKwMo": 45.61,
+      "onPeakWinterKwMo": 32.93
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2399,
+        "winterRate": 0.2399
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2284,
+        "winterRate": 0.2284
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1147,
+      "winterRate": 0.1147
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-6772f02eb5f9d561220ececc",
+    "utility": "San Diego Gas & Electric Co",
+    "schedule": "AL-TOU Primary (0-500kW)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "6772f02eb5f9d561220ececc",
+    "startdate": "2024-09-30 23:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 6772f02eb5f9d561220ececc (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 30.01,
+      "onPeakSummerKwMo": 45.28,
+      "onPeakWinterKwMo": 32.74
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2389,
+        "winterRate": 0.2389
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2274,
+        "winterRate": 0.2274
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1144,
+      "winterRate": 0.1144
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-6772f03ab5f9d561220ececd",
+    "utility": "San Diego Gas & Electric Co",
+    "schedule": "AL-TOU Primary (Above 500kW)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "6772f03ab5f9d561220ececd",
+    "startdate": "2024-09-30 23:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 6772f03ab5f9d561220ececd (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 30.01,
+      "onPeakSummerKwMo": 45.28,
+      "onPeakWinterKwMo": 32.74
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2389,
+        "winterRate": 0.2389
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2274,
+        "winterRate": 0.2274
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1144,
+      "winterRate": 0.1144
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-6772f076b5f9d561220ecece",
+    "utility": "San Diego Gas & Electric Co",
+    "schedule": "AL-TOU Primary Substation",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "6772f076b5f9d561220ecece",
+    "startdate": "2024-09-30 23:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 6772f076b5f9d561220ecece (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 15.91,
+      "onPeakSummerKwMo": 17.79,
+      "onPeakWinterKwMo": 0.63
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2373,
+        "winterRate": 0.2373
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2258,
+        "winterRate": 0.2258
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1129,
+      "winterRate": 0.1129
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-6772f07e739c802b3b0a6f3f",
+    "utility": "San Diego Gas & Electric Co",
+    "schedule": "AL-TOU Secondary Substation",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "6772f07e739c802b3b0a6f3f",
+    "startdate": "2024-09-30 23:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 6772f07e739c802b3b0a6f3f (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 16.45,
+      "onPeakSummerKwMo": 17.97,
+      "onPeakWinterKwMo": 0.65
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2384,
+        "winterRate": 0.2384
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2269,
+        "winterRate": 0.2269
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1132,
+      "winterRate": 0.1132
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67731329b5f9d561220ececf",
+    "utility": "San Diego Gas & Electric Co",
+    "schedule": "AL-TOU Secondary Substation (Above 12 MW)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67731329b5f9d561220ececf",
+    "startdate": "2024-09-30 23:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67731329b5f9d561220ececf (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 16.45,
+      "onPeakSummerKwMo": 17.97,
+      "onPeakWinterKwMo": 0.65
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2384,
+        "winterRate": 0.2384
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2269,
+        "winterRate": 0.2269
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1132,
+      "winterRate": 0.1132
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67731518926bc4d61805abdb",
+    "utility": "San Diego Gas & Electric Co",
+    "schedule": "AL-TOU Primary Substation (Above 12MW)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67731518926bc4d61805abdb",
+    "startdate": "2024-09-30 23:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67731518926bc4d61805abdb (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 15.91,
+      "onPeakSummerKwMo": 17.79,
+      "onPeakWinterKwMo": 0.63
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2373,
+        "winterRate": 0.2373
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 16,
+        "endHour": 21,
+        "summerRate": 0.2258,
+        "winterRate": 0.2258
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1129,
+      "winterRate": 0.1129
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67b9003261b1e0364e096422",
+    "utility": "Consolidated Edison Co-NY Inc",
+    "schedule": "SC-12 - Multiple Dwellings Space Heating Voluntary TOD Service - Energy Only - Zone J [NYC]",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67b9003261b1e0364e096422",
+    "startdate": "2025-02-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67b9003261b1e0364e096422 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 6.06,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 22,
+        "summerRate": 0.413,
+        "winterRate": 0.413
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 22,
+        "summerRate": 0.6793,
+        "winterRate": 0.6793
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1739,
+      "winterRate": 0.1739
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67b9003561b1e0364e096423",
+    "utility": "Consolidated Edison Co-NY Inc",
+    "schedule": "SC-12 - Multiple Dwellings Space Heating Voluntary TOD Service - Energy Only - Zone I [NYC]",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67b9003561b1e0364e096423",
+    "startdate": "2025-02-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67b9003561b1e0364e096423 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 6.06,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 22,
+        "summerRate": 0.4037,
+        "winterRate": 0.4037
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 22,
+        "summerRate": 0.67,
+        "winterRate": 0.67
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1646,
+      "winterRate": 0.1646
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67b9002f61b1e0364e096421",
+    "utility": "Consolidated Edison Co-NY Inc",
+    "schedule": "SC-12 - Multiple Dwellings Space Heating Voluntary TOD Service - Energy Only - Zone H [Westchester]",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67b9002f61b1e0364e096421",
+    "startdate": "2025-02-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67b9002f61b1e0364e096421 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 2.48,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 22,
+        "summerRate": 0.4047,
+        "winterRate": 0.4047
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 22,
+        "summerRate": 0.671,
+        "winterRate": 0.671
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1656,
+      "winterRate": 0.1656
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67b9003861b1e0364e096424",
+    "utility": "Consolidated Edison Co-NY Inc",
+    "schedule": "SC-12 - Multiple Dwellings Space Heating Voluntary TOD Service - Energy Only - Zone I [Westchester]",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67b9003861b1e0364e096424",
+    "startdate": "2025-02-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67b9003861b1e0364e096424 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 2.48,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 22,
+        "summerRate": 0.4083,
+        "winterRate": 0.4083
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 22,
+        "summerRate": 0.6746,
+        "winterRate": 0.6746
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1692,
+      "winterRate": 0.1692
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67b9002961b1e0364e09641f",
+    "utility": "Consolidated Edison Co-NY Inc",
+    "schedule": "SC-12 - Multiple Dwellings Space Heating Voluntary TOD Service Energy Only - [Westchester]",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67b9002961b1e0364e09641f",
+    "startdate": "2025-02-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67b9002961b1e0364e09641f (retrieved 2026-06-15). summer months derived from energy-rate seasonality (6,7,8,9). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9
+    ],
+    "demand": {
+      "facilitiesKwMo": 0.81,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 22,
+        "summerRate": 0.2859,
+        "winterRate": 0.2859
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 22,
+        "summerRate": 0.5522,
+        "winterRate": 0.5522
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0468,
+      "winterRate": 0.0468
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67b66bbe68be0da29d0777a1",
+    "utility": "Consolidated Edison Co-NY Inc",
+    "schedule": "SC 8 - Multiple Dwellings Redistribution TOD Service [Westchester]",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67b66bbe68be0da29d0777a1",
+    "startdate": "2025-02-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67b66bbe68be0da29d0777a1 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy window found; on-peak window taken from the demand schedule peak hours. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 5.77,
+      "onPeakSummerKwMo": 31.72,
+      "onPeakWinterKwMo": 26.36
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 18,
+        "endHour": 22,
+        "summerRate": 0.0332,
+        "winterRate": 0.0332
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0332,
+      "winterRate": 0.0332
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67b66bd068be0da29d0777a2",
+    "utility": "Consolidated Edison Co-NY Inc",
+    "schedule": "SC 8 - Multiple Dwellings Redistribution TOD Service - Zone I [Westchester]",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67b66bd068be0da29d0777a2",
+    "startdate": "2025-02-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67b66bd068be0da29d0777a2 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy window found; on-peak window taken from the demand schedule peak hours. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 5.77,
+      "onPeakSummerKwMo": 31.72,
+      "onPeakWinterKwMo": 30.99
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 18,
+        "endHour": 22,
+        "summerRate": 0.1512,
+        "winterRate": 0.1512
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1512,
+      "winterRate": 0.1512
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67b66bd868be0da29d0777a3",
+    "utility": "Consolidated Edison Co-NY Inc",
+    "schedule": "SC 8 - Multiple Dwellings Redistribution TOD Service [NYC]",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67b66bd868be0da29d0777a3",
+    "startdate": "2025-02-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67b66bd868be0da29d0777a3 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy window found; on-peak window taken from the demand schedule peak hours. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 5.77,
+      "onPeakSummerKwMo": 31.72,
+      "onPeakWinterKwMo": 26.36
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 18,
+        "endHour": 22,
+        "summerRate": 0.0332,
+        "winterRate": 0.0332
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0332,
+      "winterRate": 0.0332
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67d0b4257568c8189f03c551",
+    "utility": "Massachusetts Electric Co",
+    "schedule": "G-3 Time of Use SEMA Load Zone Farm Discount",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67d0b4257568c8189f03c551",
+    "startdate": "2025-02-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67d0b4257568c8189f03c551 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 10.31,
+      "onPeakWinterKwMo": 10.31
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.0097,
+        "winterRate": 0.0097
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0073,
+      "winterRate": 0.0073
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67d0b42cafd8b668700d5fec",
+    "utility": "Massachusetts Electric Co",
+    "schedule": "G-3 Time of Use SEMA Load Zone Farm Discount",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67d0b42cafd8b668700d5fec",
+    "startdate": "2025-02-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67d0b42cafd8b668700d5fec (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 10.31,
+      "onPeakWinterKwMo": 10.31
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.1591,
+        "winterRate": 0.1591
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1568,
+      "winterRate": 0.1568
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67d0b431afd8b668700d5fed",
+    "utility": "Massachusetts Electric Co",
+    "schedule": "G-3 Time of Use NEMA Load Zone Farm Discount",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67d0b431afd8b668700d5fed",
+    "startdate": "2025-02-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67d0b431afd8b668700d5fed (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 10.31,
+      "onPeakWinterKwMo": 10.31
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.0097,
+        "winterRate": 0.0097
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0073,
+      "winterRate": 0.0073
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67d0b435afd8b668700d5fee",
+    "utility": "Massachusetts Electric Co",
+    "schedule": "G-3 Time of Use NEMA Load Zone Farm Discount",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67d0b435afd8b668700d5fee",
+    "startdate": "2025-02-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67d0b435afd8b668700d5fee (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 10.31,
+      "onPeakWinterKwMo": 10.31
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.1537,
+        "winterRate": 0.1537
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1513,
+      "winterRate": 0.1513
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67d0b43aafd8b668700d5fef",
+    "utility": "Massachusetts Electric Co",
+    "schedule": "G-3 Time of Use WCMA Load Zone Farm Discount",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67d0b43aafd8b668700d5fef",
+    "startdate": "2025-02-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67d0b43aafd8b668700d5fef (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 10.31,
+      "onPeakWinterKwMo": 10.31
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.0097,
+        "winterRate": 0.0097
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0073,
+      "winterRate": 0.0073
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67d0b43fafd8b668700d5ff0",
+    "utility": "Massachusetts Electric Co",
+    "schedule": "G-3 Time of Use WCMA Load Zone Farm Discount",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67d0b43fafd8b668700d5ff0",
+    "startdate": "2025-02-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67d0b43fafd8b668700d5ff0 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 10.31,
+      "onPeakWinterKwMo": 10.31
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.1541,
+        "winterRate": 0.1541
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1518,
+      "winterRate": 0.1518
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67d0b275afd8b668700d5fe6",
+    "utility": "Massachusetts Electric Co",
+    "schedule": "G-3 Time of Use NEMA Load Zone - High Voltage",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67d0b275afd8b668700d5fe6",
+    "startdate": "2025-02-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67d0b275afd8b668700d5fe6 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 9.65,
+      "onPeakWinterKwMo": 9.65
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.0104,
+        "winterRate": 0.0104
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0079,
+      "winterRate": 0.0079
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-67d0b27aafd8b668700d5fe7",
+    "utility": "Massachusetts Electric Co",
+    "schedule": "G-3 Time of Use NEMA Load Zone - High Voltage",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "67d0b27aafd8b668700d5fe7",
+    "startdate": "2025-02-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 67d0b27aafd8b668700d5fe7 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 9.65,
+      "onPeakWinterKwMo": 9.65
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.1544,
+        "winterRate": 0.1544
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1519,
+      "winterRate": 0.1519
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-68c8ab150a6eacd6bc0a9911",
+    "utility": "Rochester Gas & Electric Corp",
+    "schedule": "SERVICE CLASSIFICATION NO. 8 LARGE GENERAL SERVICE - TIME-OF-USE RATE RSS (Non-Retail) Secondary",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "68c8ab150a6eacd6bc0a9911",
+    "startdate": "2025-05-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 68c8ab150a6eacd6bc0a9911 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 21.44,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 21,
+        "summerRate": 0.0941,
+        "winterRate": 0.0941
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0563,
+      "winterRate": 0.0563
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-68c8ad19d948d724670ef11a",
+    "utility": "Rochester Gas & Electric Corp",
+    "schedule": "SERVICE CLASSIFICATION NO. 8 LARGE GENERAL SERVICE - TIME-OF-USE RATE RSS (Non-Retail) Primary",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "68c8ad19d948d724670ef11a",
+    "startdate": "2025-05-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 68c8ad19d948d724670ef11a (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 21.25,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 21,
+        "summerRate": 0.0903,
+        "winterRate": 0.0903
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0556,
+      "winterRate": 0.0556
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-68c895f06ab33f60bd08302c",
+    "utility": "Rochester Gas & Electric Corp",
+    "schedule": "SERVICE CLASSIFICATION NO. 8 LARGE GENERAL SERVICE - TIME-OF-USE RATE RSS (Non-Retail) Sub Transmission-Commercial",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "68c895f06ab33f60bd08302c",
+    "startdate": "2025-05-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 68c895f06ab33f60bd08302c (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 15.2,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 21,
+        "summerRate": 0.0908,
+        "winterRate": 0.0908
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0554,
+      "winterRate": 0.0554
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-68c8ae7f6ab33f60bd08302d",
+    "utility": "Rochester Gas & Electric Corp",
+    "schedule": "SERVICE CLASSIFICATION NO. 8 LARGE GENERAL SERVICE - TIME-OF-USE RATE RSS (Non-Retail) Sub Transmission-Industrial",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "68c8ae7f6ab33f60bd08302d",
+    "startdate": "2025-05-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 68c8ae7f6ab33f60bd08302d (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 14.54,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 21,
+        "summerRate": 0.0889,
+        "winterRate": 0.0889
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0552,
+      "winterRate": 0.0552
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-68c8b23aa76df093d909f1d0",
+    "utility": "Rochester Gas & Electric Corp",
+    "schedule": "SERVICE CLASSIFICATION NO. 8 LARGE GENERAL SERVICE - TIME-OF-USE RATE RSS (Non-Retail) Transmission",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "68c8b23aa76df093d909f1d0",
+    "startdate": "2025-05-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 68c8b23aa76df093d909f1d0 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 14.47,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 21,
+        "summerRate": 0.0889,
+        "winterRate": 0.0889
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0552,
+      "winterRate": 0.0552
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-68c8b18d0ecf0fba6b094e5c",
+    "utility": "Rochester Gas & Electric Corp",
+    "schedule": "SERVICE CLASSIFICATION NO. 8 LARGE GENERAL SERVICE - TIME-OF-USE RATE RSS (Non-Retail) Substation",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "68c8b18d0ecf0fba6b094e5c",
+    "startdate": "2025-05-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 68c8b18d0ecf0fba6b094e5c (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 12.57,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 21,
+        "summerRate": 0.0883,
+        "winterRate": 0.0883
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0563,
+      "winterRate": 0.0563
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-68c8b71819f23d21e3011c58",
+    "utility": "Rochester Gas & Electric Corp",
+    "schedule": "SERVICE CLASSIFICATION NO. 9 TIME-OF-USE Small Demand(Non-Retail) Single Phase",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "68c8b71819f23d21e3011c58",
+    "startdate": "2025-05-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 68c8b71819f23d21e3011c58 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 19.63,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 21,
+        "summerRate": 0.1011,
+        "winterRate": 0.1011
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.063,
+      "winterRate": 0.063
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-68c8ba47adf4d7b9330b5ff9",
+    "utility": "Rochester Gas & Electric Corp",
+    "schedule": "SERVICE CLASSIFICATION NO. 9  Time Of Use Small Demand (Non-Retail) Poly Phase",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "68c8ba47adf4d7b9330b5ff9",
+    "startdate": "2025-05-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 68c8ba47adf4d7b9330b5ff9 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 19.63,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 7,
+        "endHour": 21,
+        "summerRate": 0.1011,
+        "winterRate": 0.1011
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.063,
+      "winterRate": 0.063
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-696fdb9c79ad72ec6f0f3168",
+    "utility": "Connecticut Light & Power Co",
+    "schedule": "Rate 58 - Large Time of Day Non Manufacturers Demand Less Than 2000 kW",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "696fdb9c79ad72ec6f0f3168",
+    "startdate": "2026-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 696fdb9c79ad72ec6f0f3168 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; flat demand unit was \"kva\", treated as $/kW-mo. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 24.16,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0436,
+        "winterRate": 0.0436
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.017,
+      "winterRate": 0.017
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-696fdc050a32312ef00ae239",
+    "utility": "Connecticut Light & Power Co",
+    "schedule": "Rate 58 - Large Time of Day  Non Manufacturers Demand Less Than 2000 kW",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "696fdc050a32312ef00ae239",
+    "startdate": "2026-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 696fdc050a32312ef00ae239 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; flat demand unit was \"kva\", treated as $/kW-mo. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 24.16,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.231,
+        "winterRate": 0.231
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.2044,
+      "winterRate": 0.2044
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-696fdc863022f63da90884aa",
+    "utility": "Connecticut Light & Power Co",
+    "schedule": "Rate 58 Large Time-Of-Day Electric Service Non-Manufacturers Demand Between 2000 kW & 5000 kW",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "696fdc863022f63da90884aa",
+    "startdate": "2026-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 696fdc863022f63da90884aa (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; flat demand unit was \"kva\", treated as $/kW-mo. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 24.16,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0436,
+        "winterRate": 0.0436
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.017,
+      "winterRate": 0.017
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-696fdcc917d20e210e0121b9",
+    "utility": "Connecticut Light & Power Co",
+    "schedule": "Rate 58 Large Time-Of-Day Electric Service Non-Manufacturers Demand Between 2000 kW & 5000 kW",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "696fdcc917d20e210e0121b9",
+    "startdate": "2026-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 696fdcc917d20e210e0121b9 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; flat demand unit was \"kva\", treated as $/kW-mo. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 24.16,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.231,
+        "winterRate": 0.231
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.2044,
+      "winterRate": 0.2044
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-696fdd03d6ebffaeca01d728",
+    "utility": "Connecticut Light & Power Co",
+    "schedule": "Rate 58 - Large Time-Of-Day Electric Service Non-Manufacturers Demand Over 5000 kW",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "696fdd03d6ebffaeca01d728",
+    "startdate": "2026-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 696fdd03d6ebffaeca01d728 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; flat demand unit was \"kva\", treated as $/kW-mo. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 24.16,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0436,
+        "winterRate": 0.0436
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.017,
+      "winterRate": 0.017
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-696fdd3979ad72ec6f0f3169",
+    "utility": "Connecticut Light & Power Co",
+    "schedule": "Rate 58 - Large Time-Of-Day Electric Service Non-Manufacturers Demand Over 5000 kW",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "696fdd3979ad72ec6f0f3169",
+    "startdate": "2026-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 696fdd3979ad72ec6f0f3169 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; flat demand unit was \"kva\", treated as $/kW-mo. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 24.16,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.231,
+        "winterRate": 0.231
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.2044,
+      "winterRate": 0.2044
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-696fcdc25eb14c315b04deb8",
+    "utility": "Connecticut Light & Power Co",
+    "schedule": "Rate 57 - Large Time-Of-Day Electric Service Manufacturers Demand Less Than 2000 kW",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "696fcdc25eb14c315b04deb8",
+    "startdate": "2026-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 696fcdc25eb14c315b04deb8 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; flat demand unit was \"kva\", treated as $/kW-mo. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 18.29,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.0443,
+        "winterRate": 0.0443
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0172,
+      "winterRate": 0.0172
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-696fd00cb87ea8307402d808",
+    "utility": "Connecticut Light & Power Co",
+    "schedule": "Rate 57 - Large Time-Of-Day Electric Service Manufacturers Demand Less Than 2000 kW",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "696fd00cb87ea8307402d808",
+    "startdate": "2026-01-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 696fd00cb87ea8307402d808 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; flat demand unit was \"kva\", treated as $/kW-mo. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 18.29,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 20,
+        "summerRate": 0.2317,
+        "winterRate": 0.2317
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.2046,
+      "winterRate": 0.2046
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69af1c6a9a6e00988106638e",
+    "utility": "United Illuminating Co",
+    "schedule": "General Service Time-of-Use with Demand",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69af1c6a9a6e00988106638e",
+    "startdate": "2026-01-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69af1c6a9a6e00988106638e (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 20.31,
+      "onPeakWinterKwMo": 20.31
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 10,
+        "endHour": 18,
+        "summerRate": 0.2078,
+        "winterRate": 0.2078
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1778,
+      "winterRate": 0.1778
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69af213392259acc4307ed0d",
+    "utility": "United Illuminating Co",
+    "schedule": "Large Power Time-of-Day",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69af213392259acc4307ed0d",
+    "startdate": "2026-01-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69af213392259acc4307ed0d (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 31.78,
+      "onPeakWinterKwMo": 31.78
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 10,
+        "endHour": 18,
+        "summerRate": 0.1791,
+        "winterRate": 0.1791
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1491,
+      "winterRate": 0.1491
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69af1bab2ba29bd6cb06a86b",
+    "utility": "United Illuminating Co",
+    "schedule": "General Service Time-of-Use with Demand",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69af1bab2ba29bd6cb06a86b",
+    "startdate": "2026-01-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69af1bab2ba29bd6cb06a86b (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy window found; on-peak window taken from the demand schedule peak hours. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 20.31,
+      "onPeakWinterKwMo": 20.31
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 10,
+        "endHour": 18,
+        "summerRate": 0.0539,
+        "winterRate": 0.0539
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0539,
+      "winterRate": 0.0539
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69af1d3fe37c51c4d6045a5f",
+    "utility": "United Illuminating Co",
+    "schedule": "General Service Time-of-Use Last Resort",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69af1d3fe37c51c4d6045a5f",
+    "startdate": "2026-01-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69af1d3fe37c51c4d6045a5f (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy window found; on-peak window taken from the demand schedule peak hours. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 14.73,
+      "onPeakWinterKwMo": 14.73
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 10,
+        "endHour": 18,
+        "summerRate": 0.0254,
+        "winterRate": 0.0254
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0254,
+      "winterRate": 0.0254
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69af1ed5652dc57b320c71cb",
+    "utility": "United Illuminating Co",
+    "schedule": "General Service Time-of-Use Last Resort",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69af1ed5652dc57b320c71cb",
+    "startdate": "2026-01-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69af1ed5652dc57b320c71cb (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy window found; on-peak window taken from the demand schedule peak hours. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 14.73,
+      "onPeakWinterKwMo": 14.73
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 10,
+        "endHour": 18,
+        "summerRate": 0.0254,
+        "winterRate": 0.0254
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0254,
+      "winterRate": 0.0254
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69af20a7d0baf850fd0d81db",
+    "utility": "United Illuminating Co",
+    "schedule": "Large Power Time-of-Day",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69af20a7d0baf850fd0d81db",
+    "startdate": "2026-01-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69af20a7d0baf850fd0d81db (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy window found; on-peak window taken from the demand schedule peak hours. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0,
+      "onPeakSummerKwMo": 31.78,
+      "onPeakWinterKwMo": 31.78
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 10,
+        "endHour": 18,
+        "summerRate": 0.0254,
+        "winterRate": 0.0254
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0254,
+      "winterRate": 0.0254
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69af17d5b1d9b6a59b04abbb",
+    "utility": "United Illuminating Co",
+    "schedule": "General Service with Demand",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69af17d5b1d9b6a59b04abbb",
+    "startdate": "2026-01-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69af17d5b1d9b6a59b04abbb (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 28.3,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0325,
+        "winterRate": 0.0325
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0325,
+      "winterRate": 0.0325
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69af18a1bf6c3db92a0a6ccb",
+    "utility": "United Illuminating Co",
+    "schedule": "General Service with Demand",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69af18a1bf6c3db92a0a6ccb",
+    "startdate": "2026-01-01 01:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69af18a1bf6c3db92a0a6ccb (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 28.3,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.1661,
+        "winterRate": 0.1661
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1661,
+      "winterRate": 0.1661
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69d3d9aedec8cefcc5034d09",
+    "utility": "Central Hudson Gas & Elec Corp",
+    "schedule": "S.C. No. 2 - General Service Secondary (Unbundled)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69d3d9aedec8cefcc5034d09",
+    "startdate": "2026-03-12 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69d3d9aedec8cefcc5034d09 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 16.88,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.147,
+        "winterRate": 0.147
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.147,
+      "winterRate": 0.147
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69d3dadd2fb588641604256a",
+    "utility": "Central Hudson Gas & Elec Corp",
+    "schedule": "S.C. No. 2 - General Service Secondary",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69d3dadd2fb588641604256a",
+    "startdate": "2026-03-12 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69d3dadd2fb588641604256a (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 16.88,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.2892,
+        "winterRate": 0.2892
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.2892,
+      "winterRate": 0.2892
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69d3db17ce372ebef9059ca9",
+    "utility": "Central Hudson Gas & Elec Corp",
+    "schedule": "S.C. No. 2 - General Service Primary (Unbundled)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69d3db17ce372ebef9059ca9",
+    "startdate": "2026-03-12 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69d3db17ce372ebef9059ca9 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 12.3,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.1473,
+        "winterRate": 0.1473
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1473,
+      "winterRate": 0.1473
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69d3db646c5a21fcec0f0918",
+    "utility": "Central Hudson Gas & Elec Corp",
+    "schedule": "S.C. No. 2 - General Service Primary",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69d3db646c5a21fcec0f0918",
+    "startdate": "2026-03-12 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69d3db646c5a21fcec0f0918 (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 12.3,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.2896,
+        "winterRate": 0.2896
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.2896,
+      "winterRate": 0.2896
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69d3dbb479d32c267f0868ab",
+    "utility": "Central Hudson Gas & Elec Corp",
+    "schedule": "S.C. No. 3 - Large Power Primary (Unbundled)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69d3dbb479d32c267f0868ab",
+    "startdate": "2026-03-12 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69d3dbb479d32c267f0868ab (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 15.56,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0,
+        "winterRate": 0
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0,
+      "winterRate": 0
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69d3dc26793fc78d4301816a",
+    "utility": "Central Hudson Gas & Elec Corp",
+    "schedule": "S.C. No. 3 - Large Power Primary",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69d3dc26793fc78d4301816a",
+    "startdate": "2026-03-12 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69d3dc26793fc78d4301816a (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 15.56,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.1423,
+        "winterRate": 0.1423
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1423,
+      "winterRate": 0.1423
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69d3dc600424ae7d9c090f5a",
+    "utility": "Central Hudson Gas & Elec Corp",
+    "schedule": "S.C. No. 13 - Large Power Substation (Unbundled)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69d3dc600424ae7d9c090f5a",
+    "startdate": "2026-03-12 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69d3dc600424ae7d9c090f5a (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 13.01,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0,
+        "winterRate": 0
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0,
+      "winterRate": 0
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69d3dd1b74612f90b207541a",
+    "utility": "Central Hudson Gas & Elec Corp",
+    "schedule": "S.C. No. 13 - Large Power Substation",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69d3dd1b74612f90b207541a",
+    "startdate": "2026-03-12 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69d3dd1b74612f90b207541a (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 13.01,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.1423,
+        "winterRate": 0.1423
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1423,
+      "winterRate": 0.1423
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69deaa74c3f455511f0635a2",
+    "utility": "Pacific Gas & Electric Co",
+    "schedule": "Large Agriculture Power TOU Rate (AG-5B)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69deaa74c3f455511f0635a2",
+    "startdate": "2026-03-27 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69deaa74c3f455511f0635a2 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (5,6,7,8,9,10). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 20.54,
+      "onPeakSummerKwMo": 10.45,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 18,
+        "summerRate": 0.2116,
+        "winterRate": 0.2116
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.2108,
+      "winterRate": 0.2108
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69deaa79d600f18ec30600ad",
+    "utility": "Pacific Gas & Electric Co",
+    "schedule": "Large Agriculture Power TOU Rate (AG-5E)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69deaa79d600f18ec30600ad",
+    "startdate": "2026-03-27 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69deaa79d600f18ec30600ad (retrieved 2026-06-15). summer months derived from energy-rate seasonality (5,6,7,8,9,10). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 20.54,
+      "onPeakSummerKwMo": 10.45,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 18,
+        "summerRate": 0.2116,
+        "winterRate": 0.2116
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.2108,
+      "winterRate": 0.2108
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69deaa7f54d2cac2040b6970",
+    "utility": "Pacific Gas & Electric Co",
+    "schedule": "Large Agriculture Power TOU Rate (AG-5C)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69deaa7f54d2cac2040b6970",
+    "startdate": "2026-03-27 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69deaa7f54d2cac2040b6970 (retrieved 2026-06-15). summer months derived from energy-rate seasonality (5,6,7,8,9,10). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 14.9,
+      "onPeakSummerKwMo": 14.57,
+      "onPeakWinterKwMo": 3.51
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 18,
+        "summerRate": 0.1808,
+        "winterRate": 0.1808
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 12,
+        "summerRate": 0.1804,
+        "winterRate": 0.1804
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1738,
+      "winterRate": 0.1738
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69deaa836d1ebb0263094f0f",
+    "utility": "Pacific Gas & Electric Co",
+    "schedule": "Large Agriculture Power TOU Rate (AG-5F)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69deaa836d1ebb0263094f0f",
+    "startdate": "2026-03-27 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69deaa836d1ebb0263094f0f (retrieved 2026-06-15). summer months derived from energy-rate seasonality (5,6,7,8,9,10). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 14.9,
+      "onPeakSummerKwMo": 14.57,
+      "onPeakWinterKwMo": 3.51
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 12,
+        "endHour": 18,
+        "summerRate": 0.1808,
+        "winterRate": 0.1808
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 12,
+        "summerRate": 0.1804,
+        "winterRate": 0.1804
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1738,
+      "winterRate": 0.1738
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69de7a20e547dde41109edff",
+    "utility": "Pacific Gas & Electric Co",
+    "schedule": "E-19 Medium General Demand TOU Option R (Secondary)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69de7a20e547dde41109edff",
+    "startdate": "2026-03-27 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69de7a20e547dde41109edff (retrieved 2026-06-15). summer months derived from energy-rate seasonality (5,6,7,8,9,10). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 42.1,
+      "onPeakSummerKwMo": 21.59,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.123,
+        "winterRate": 0.123
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 12,
+        "summerRate": 0.1309,
+        "winterRate": 0.1309
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1224,
+      "winterRate": 0.1224
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69de7a41820adfee230a016a",
+    "utility": "Pacific Gas & Electric Co",
+    "schedule": "E-19 Medium General Demand TOU Option R (Secondary, Voluntary)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69de7a41820adfee230a016a",
+    "startdate": "2026-03-27 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69de7a41820adfee230a016a (retrieved 2026-06-15). summer months derived from energy-rate seasonality (5,6,7,8,9,10). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 42.1,
+      "onPeakSummerKwMo": 21.59,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.123,
+        "winterRate": 0.123
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 12,
+        "summerRate": 0.1309,
+        "winterRate": 0.1309
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1224,
+      "winterRate": 0.1224
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69de7c756d1ebb0263094f0d",
+    "utility": "Pacific Gas & Electric Co",
+    "schedule": "E-19 Medium General Demand TOU Option R (Primary)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69de7c756d1ebb0263094f0d",
+    "startdate": "2026-03-27 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69de7c756d1ebb0263094f0d (retrieved 2026-06-15). summer months derived from energy-rate seasonality (5,6,7,8,9,10). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 33.1,
+      "onPeakSummerKwMo": 18.71,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.1124,
+        "winterRate": 0.1124
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 12,
+        "summerRate": 0.1202,
+        "winterRate": 0.1202
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1117,
+      "winterRate": 0.1117
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69de7c7bc3f455511f06359e",
+    "utility": "Pacific Gas & Electric Co",
+    "schedule": "E-19 Medium General Demand TOU Option R (Primary, Voluntary)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69de7c7bc3f455511f06359e",
+    "startdate": "2026-03-27 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69de7c7bc3f455511f06359e (retrieved 2026-06-15). summer months derived from energy-rate seasonality (5,6,7,8,9,10). VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 33.1,
+      "onPeakSummerKwMo": 18.71,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 21,
+        "summerRate": 0.1124,
+        "winterRate": 0.1124
+      },
+      {
+        "name": "Mid-peak",
+        "startHour": 8,
+        "endHour": 12,
+        "summerRate": 0.1202,
+        "winterRate": 0.1202
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1117,
+      "winterRate": 0.1117
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69e265d0d773261e270869cc",
+    "utility": "Public Service Elec & Gas Co",
+    "schedule": "HTS - High Tension Service (Subtransmission)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69e265d0d773261e270869cc",
+    "startdate": "2026-04-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69e265d0d773261e270869cc (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 38.7437,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.1268,
+        "winterRate": 0.1268
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1268,
+      "winterRate": 0.1268
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69e266adf454c9f31002aaad",
+    "utility": "Public Service Elec & Gas Co",
+    "schedule": "HTS - High Tension Service (High Voltage)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69e266adf454c9f31002aaad",
+    "startdate": "2026-04-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69e266adf454c9f31002aaad (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 37.6859,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.1242,
+        "winterRate": 0.1242
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.1242,
+      "winterRate": 0.1242
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69e265cb7f26ac29ab0fd0fc",
+    "utility": "Public Service Elec & Gas Co",
+    "schedule": "HTS - High Tension Service (Subtransmission)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69e265cb7f26ac29ab0fd0fc",
+    "startdate": "2026-04-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69e265cb7f26ac29ab0fd0fc (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 1.737,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0189,
+        "winterRate": 0.0189
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0189,
+      "winterRate": 0.0189
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  },
+  {
+    "id": "usurdb-69e266a8db9a0734f3073dfd",
+    "utility": "Public Service Elec & Gas Co",
+    "schedule": "HTS - High Tension Service (High Voltage)",
+    "placeholder": true,
+    "source": "USURDB",
+    "usurdbLabel": "69e266a8db9a0734f3073dfd",
+    "startdate": "2026-04-01 00:00:00",
+    "retrievedAt": "2026-06-15",
+    "notes": "Auto-derived from USURDB 69e266a8db9a0734f3073dfd (retrieved 2026-06-15). summer season could not be cleanly split, defaulted to Jun-Oct; no TOU energy or demand schedule found; on-peak window defaulted to business hours 08:00-20:00. VERIFY against the filed tariff sheet before quoting.",
+    "summerMonths": [
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "demand": {
+      "facilitiesKwMo": 0.6792,
+      "onPeakSummerKwMo": 0,
+      "onPeakWinterKwMo": 0
+    },
+    "windows": [
+      {
+        "name": "On-peak",
+        "startHour": 8,
+        "endHour": 20,
+        "summerRate": 0.0164,
+        "winterRate": 0.0164
+      }
+    ],
+    "offPeak": {
+      "summerRate": 0.0164,
+      "winterRate": 0.0164
+    },
+    "ratchet": {
+      "enabled": false,
+      "pct": 0.5
+    }
+  }
+]

@@ -30,7 +30,20 @@ if (!libs.chart || !libs.xlsx || !libs.jspdf || !libs.roboto) throw new Error('v
 
 const tab = (id) => page.click(`nav.tabs button[data-tab="${id}"]`);
 
-// --- Tab 1: upload XLSX first (multi-sheet, real date serials), then the CSV ---
+// --- Tab 1: reference building profile (NREL ComStock) ---
+await page.selectOption('section[data-tab="intervals"] select >> nth=0', 'NY');
+await page.selectOption('section[data-tab="intervals"] select >> nth=1', 'largeoffice');
+await page.fill('section[data-tab="intervals"] input[type=number]', '1500');
+await page.click('section[data-tab="intervals"] button:has-text("Load reference profile")');
+await page.waitForSelector('table.heatmap', { timeout: 20000 });
+const refDetect = await page.$eval('section[data-tab="intervals"]', (e) => e.textContent);
+if (!refDetect.includes('ComStock')) throw new Error('reference profile source note missing');
+const refPeak = await page.$$eval('section[data-tab="intervals"] .stat', (els) =>
+  els.map((e) => e.textContent).find((t) => /peak demand/i.test(t)));
+if (!/1,?500/.test(refPeak || '')) throw new Error(`reference profile not scaled to 1500 kW peak: ${refPeak}`);
+console.log('tab 1: reference profile loaded (NY large office @ 1500 kW) —', refPeak);
+
+// --- Tab 1: upload XLSX (multi-sheet, real date serials), then the CSV ---
 await page.setInputFiles('section[data-tab="intervals"] input[type=file]', 'sample-data/generic_15min_kw.xlsx');
 await page.waitForSelector('table.heatmap', { timeout: 30000 });
 const detection = await page.$eval('section[data-tab="intervals"]', (e) => e.textContent);
@@ -69,9 +82,13 @@ const cyc = await page.$$eval('section[data-tab="dispatch"] .stat', (els) =>
 console.log('tab 3:', cyc);
 if (!/\d/.test(cyc || '')) throw new Error('dispatch stats missing');
 
-// --- Tab 4: tariff savings table appears ---
+// --- Tab 4: USURDB library loads, utility filter works, savings compute ---
 await tab('tariffs');
 await page.waitForSelector('section[data-tab="tariffs"] table.data');
+const libCount = await page.$eval('section[data-tab="tariffs"] .muted', (e) => e.textContent);
+console.log('tab 4 library:', libCount);
+const utilOptions = await page.$$eval('section[data-tab="tariffs"] select >> nth=0 >> option', (els) => els.length);
+if (utilOptions < 10) throw new Error(`expected many utilities in filter, got ${utilOptions}`);
 const savings = await page.$$eval('section[data-tab="tariffs"] .stat', (els) => els.map((e) => e.textContent.trim()));
 console.log('tab 4:', savings.join(' || ') || 'no savings stats');
 if (!savings.some((s) => s.includes('$'))) throw new Error('tariff savings not computed');

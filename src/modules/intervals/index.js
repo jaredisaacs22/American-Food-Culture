@@ -3,7 +3,7 @@
 // and produce the analysis that drives sizing (worst day per billing period).
 /* global XLSX */
 
-import { el, clear, fmt } from '../../ui/dom.js';
+import { el, clear, fmt, downloadFile } from '../../ui/dom.js';
 import { getSite, notify, subscribe } from '../../model/store.js';
 import { parseCsv, parseIntervalRows, detectLayout, extractRecords } from './parser.js';
 import { analyzeIntervals, worstDayProfile } from './analysis.js';
@@ -58,8 +58,9 @@ function uploadPanel(panel) {
   const dz = el('div', { class: 'dropzone' },
     el('div', {}, el('b', {}, 'Drop interval data here'), ' or click to browse'),
     el('div', { class: 'muted', style: 'margin-top:6px' },
-      'CSV / XLSX — Green Button exports, SCE & SDG&E formats, or generic timestamp + kW/kWh. ',
-      'Auto-detects 15/30/60-min intervals and normalizes to 15-min kW.'),
+      'CSV or Excel — a full year of 15-minute data works best. ',
+      'Auto-detects Green Button, SCE & SDG&E exports, or any file with a timestamp plus a kW and/or kWh column. ',
+      '5/30/60-min data is accepted and normalized to 15-min.'),
   );
   dz.addEventListener('click', () => input.click());
   dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
@@ -70,7 +71,34 @@ function uploadPanel(panel) {
     if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0], panel);
   });
 
-  return el('div', { class: 'panel' }, el('h2', {}, 'Interval Data Upload'), dz, input);
+  const templateBtn = el('button', { class: 'ghost-sm', onclick: downloadTemplate }, '↓ Download CSV template');
+
+  return el('div', { class: 'panel' },
+    el('h2', {}, 'Interval Data Upload'),
+    dz,
+    input,
+    el('div', { class: 'muted', style: 'margin-top:8px' },
+      el('b', {}, 'Expected columns: '),
+      'a timestamp (e.g. ', el('code', {}, '2024-01-01 00:15'),
+      ') and a value column headed ', el('code', {}, 'kW'), ', ', el('code', {}, 'kWh'),
+      ', or both. If both are present we use kW and cross-check them. ', templateBtn,
+    ),
+  );
+}
+
+function downloadTemplate() {
+  const lines = ['Timestamp,kW,kWh'];
+  const start = new Date(2024, 0, 1);
+  for (let i = 0; i < 96; i++) { // one example day at 15-min
+    const d = new Date(start.getTime() + i * 15 * 60000);
+    const hour = d.getHours();
+    const kw = Math.round((120 + 90 * Math.sin(((hour - 6) / 24) * 2 * Math.PI)) * 100) / 100;
+    const ts = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ` +
+      `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    lines.push(`${ts},${kw},${Math.round(kw * 0.25 * 1000) / 1000}`);
+  }
+  lines.push('# … continue for a full year (35,040 rows at 15-min). Keep either kW, kWh, or both columns.');
+  downloadFile('interval-data-template.csv', lines.join('\n'), 'text/csv');
 }
 
 // ---------------------------------------------------------------------------
@@ -200,8 +228,37 @@ function process(rows, fileName, panel, overrides, extraNotes = []) {
 
 function detectionPanel(panel) {
   const s = getSite().intervals.source;
-  const gapPct = s.gapsFilled / (s.gapsFilled + s.rowsParsed);
+  const isReference = !!(s.reference);
+  const gapPct = s.gapsFilled / (s.gapsFilled + s.rowsParsed || 1);
+  const cov = s.coverage;
 
+  // --- "Did it read what I expected?" check chips -------------------------
+  const chip = (ok, okText, badText) =>
+    el('span', { class: ok ? 'check-ok' : 'check-warn' }, (ok ? '✓ ' : '⚠ ') + (ok ? okText : badText));
+  const checks = el('div', { class: 'checks' },
+    chip(s.appliedIntervalMin === 15, '15-minute intervals',
+      `${s.appliedIntervalMin}-min intervals (normalized to 15-min)`),
+    cov ? chip(cov.isFullYear, `Full year — ${cov.days} days`, `${cov.days} days (not a full year)`) : null,
+    chip(gapPct <= 0.02, gapPosLabel(s), gapPosLabel(s)),
+    el('span', { class: 'check-ok' }, `✓ Reads as ${s.appliedUnit}`),
+    s.consistency ? chip(s.consistency.agrees,
+      `kW vs kWh cross-check passed (≈${s.consistency.medianRatioHours} h)`,
+      `kW vs kWh mismatch (≈${s.consistency.medianRatioHours} h → ${s.consistency.impliedIntervalMin} min)`) : null,
+  );
+
+  // --- Override controls --------------------------------------------------
+  const controls = [];
+  // Value-column picker (only when the file has more than one kW/kWh column)
+  let colSel = null;
+  if (s.valueColumns && s.valueColumns.length > 1) {
+    colSel = el('select', {},
+      ...s.valueColumns.map((v) => {
+        const o = el('option', { value: v.col }, `${v.header} (${v.unit})`);
+        if (v.col === s.selectedValueCol) o.selected = true;
+        return o;
+      }));
+    controls.push(el('label', { class: 'field' }, 'Value column:', colSel));
+  }
   const unitSel = el('select', {},
     ...['kWh', 'kW'].map((u) => {
       const o = el('option', { value: u }, u);
@@ -209,39 +266,67 @@ function detectionPanel(panel) {
       return o;
     }));
   const intSel = el('select', {},
-    ...[15, 30, 60].map((m) => {
+    ...[5, 15, 30, 60].map((m) => {
       const o = el('option', { value: m }, `${m} min`);
       if (m === s.appliedIntervalMin) o.selected = true;
       return o;
     }));
-  const reBtn = el('button', { class: 'action', onclick: () => {
-    if (!lastRows) { alert('Original file is no longer in memory — re-upload it to change interpretation.'); return; }
-    process(lastRows, lastFileName, panel, { unit: unitSel.value, intervalMin: +intSel.value });
-  } }, 'Re-process');
+  controls.push(
+    el('label', { class: 'field' }, 'Unit:', unitSel),
+    el('label', { class: 'field' }, 'Interval:', intSel),
+    el('button', { class: 'action', onclick: () => {
+      if (!lastRows) { alert('Original file is no longer in memory — re-upload it to change interpretation.'); return; }
+      const ov = { unit: unitSel.value, intervalMin: +intSel.value };
+      if (colSel) ov.valueCol = +colSel.value;
+      process(lastRows, lastFileName, panel, ov);
+    } }, 'Re-process'),
+  );
+
+  // --- Notes: separate confirmations (✓) from warnings (⚠) ---------------
+  const warnNotes = (s.notes || []).filter((n) => /^⚠/.test(n));
+  const infoNotes = (s.notes || []).filter((n) => !/^⚠/.test(n));
 
   return el('div', { class: 'panel' },
-    el('h2', {}, 'Detection Summary'),
-    el('table', { class: 'data', style: 'max-width:680px' },
+    el('h2', {}, 'What We Read From Your File'),
+    checks,
+    el('table', { class: 'data', style: 'max-width:720px;margin-top:10px' },
       tr('File', s.fileName),
       tr('Layout', s.format),
-      tr('Detected interval', `${s.detectedIntervalMin} min`),
-      tr('Detected unit', s.detectedUnit),
+      cov ? tr('Date range', `${new Date(cov.startMs).toLocaleDateString()} – ${new Date(cov.endMs).toLocaleDateString()}`) : null,
+      tr('Native interval', `${s.detectedIntervalMin} min`),
+      trNode('Value column used',
+        el('span', {}, valueColLabel(s))),
       tr('Rows parsed', s.rowsParsed.toLocaleString()),
       tr('Duplicate timestamps merged', s.duplicatesMerged.toLocaleString()),
       trNode('Gaps filled (linear interpolation)',
         el('span', { class: s.gapsFilled ? (gapPct > 0.02 ? 'warn' : '') : 'ok' },
           `${s.gapsFilled.toLocaleString()} intervals` +
-          (s.gapsFilled ? ` (longest gap ${(s.longestGapIntervals * 15 / 60).toFixed(1)} h)` : ''))),
+          (s.gapsFilled ? ` (longest gap ${(s.longestGapIntervals * 15 / 60).toFixed(1)} h)` : ' — none'))),
     ),
-    s.notes.length ? el('div', { style: 'margin-top:8px' },
-      ...s.notes.map((nt) => el('div', { class: 'warn' }, `⚠ ${nt}`))) : null,
-    el('h3', {}, 'Override interpretation'),
-    el('div', {},
-      el('label', { class: 'field' }, 'Unit:', unitSel),
-      el('label', { class: 'field' }, 'Interval:', intSel),
-      reBtn,
-    ),
+    warnNotes.length ? el('div', { style: 'margin-top:8px' },
+      ...warnNotes.map((nt) => el('div', { class: 'warn' }, nt))) : null,
+    infoNotes.length ? el('div', { class: 'muted', style: 'margin-top:6px' },
+      ...infoNotes.map((nt) => el('div', {}, nt))) : null,
+    isReference ? null : el('h3', {}, 'Override interpretation'),
+    isReference ? null : el('p', { class: 'muted', style: 'margin:0 0 6px' },
+      'If anything above looks wrong, correct it here and re-process.'),
+    isReference ? null : el('div', {}, ...controls),
   );
+}
+
+function gapPosLabel(s) {
+  if (!s.gapsFilled) return 'No gaps — complete series';
+  const pct = (s.gapsFilled / (s.gapsFilled + s.rowsParsed) * 100).toFixed(1);
+  return `${s.gapsFilled.toLocaleString()} gap intervals filled (${pct}%)`;
+}
+
+function valueColLabel(s) {
+  if (!s.valueColumns || !s.valueColumns.length) return s.appliedUnit;
+  const sel = s.valueColumns.find((v) => v.col === s.selectedValueCol);
+  const others = s.valueColumns.filter((v) => v.col !== s.selectedValueCol);
+  let label = sel ? `${sel.header} (${sel.unit})` : s.appliedUnit;
+  if (others.length) label += ` — also available: ${others.map((v) => `${v.header} (${v.unit})`).join(', ')}`;
+  return label;
 }
 
 function tr(label, value) {

@@ -205,6 +205,18 @@ table.data tr.selected-row td { background: #fff4df; }
 
 .empty-note { color: var(--ink-soft); font-style: italic; padding: 18px 0; }
 
+/* ---------- Detection check chips ---------- */
+.checks { display: flex; flex-wrap: wrap; gap: 8px; }
+.checks > span {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+.check-ok { background: #e6f4ea; color: #1e6b30; border: 1px solid #acd9b8; }
+.check-warn { background: #fdecea; color: #9b2c20; border: 1px solid #f0b3ac; }
+
 /* ---------- Small screens ---------- */
 @media (max-width: 720px) {
   header.appbar { flex-wrap: wrap; row-gap: 6px; padding: 8px 10px; }

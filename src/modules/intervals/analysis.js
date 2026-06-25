@@ -63,7 +63,7 @@ export function analyzeIntervals(normalized) {
       peakKw: m.peakKw,
       peakMs: m.peakMs,
       avgKw: m.sum / m.n,
-      loadFactor: m.sum / m.n / m.peakKw,
+      loadFactor: m.peakKw > 0 ? m.sum / m.n / m.peakKw : 0,
       energyKwh: m.sum * STEP_HOURS,
       intervals: m.n,
       worstDay: {
@@ -117,7 +117,7 @@ export function analyzeIntervals(normalized) {
       peakKw,
       peakMs,
       avgKw,
-      loadFactor: avgKw / peakKw,
+      loadFactor: peakKw > 0 ? avgKw / peakKw : 0,
       totalKwh,
     },
     monthly,

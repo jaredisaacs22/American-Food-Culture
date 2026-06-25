@@ -129,9 +129,12 @@ function paramsPanel(panel, site, config) {
     el('h3', {}, 'Charge windows (empty = charge any time below target)'),
     windowsBox,
     el('p', { class: 'muted', style: 'margin:8px 0 0' },
-      'Greedy threshold dispatch: discharge whenever load exceeds the month’s target level (month peak − shave); ',
-      'charge when below it, capped so charging never creates a new peak above the target. ',
-      'Losses are booked on the charging side; battery starts the year full.'),
+      'Peak-aware dispatch: each day the battery reserves its stored energy for that day’s peak, shaving down to ',
+      'the month’s target level (max of the monthly average and peak − shave) where energy allows, and to the ',
+      'lowest flat level it can hold otherwise — it does not drain on the shoulders. It recharges when load is below ',
+      'the target (within any charge windows), capped so charging never creates a new peak. Round-trip losses are ',
+      'booked on the charging side; the battery starts the year full. Where overnight recharge can’t fully refill, ',
+      'realized reduction falls below the sizing estimate — that gap is a real operational limit, shown per month below.'),
     ...flags.map((f) => el('div', { class: 'warn', style: 'margin-top:6px' }, `⚠ ${f}`)),
   );
 }

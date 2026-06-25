@@ -212,6 +212,18 @@ table.data tr.selected-row td { background: #fff4df; }
 
 .empty-note { color: var(--ink-soft); font-style: italic; padding: 18px 0; }
 
+/* ---------- Detection check chips ---------- */
+.checks { display: flex; flex-wrap: wrap; gap: 8px; }
+.checks > span {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+.check-ok { background: #e6f4ea; color: #1e6b30; border: 1px solid #acd9b8; }
+.check-warn { background: #fdecea; color: #9b2c20; border: 1px solid #f0b3ac; }
+
 /* ---------- Small screens ---------- */
 @media (max-width: 720px) {
   header.appbar { flex-wrap: wrap; row-gap: 6px; padding: 8px 10px; }
@@ -1091,7 +1103,8 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
           notes
         };
       }
-      let dtCol = -1, dateCol = -1, timeCol = -1, valCol = -1, unitCol = -1, valUnit = null;
+      let dtCol = -1, dateCol = -1, timeCol = -1, unitCol = -1;
+      const valueCols = [];
       for (let c = 0; c < row.length; c++) {
         const h = row[c];
         if (h.trim() === "") continue;
@@ -1111,20 +1124,18 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
           unitCol = c;
           continue;
         }
-        if (valCol < 0) {
-          const u = classifyValueHeader(h);
-          if (u && !/generat|export|received|surplus/.test(norm(h))) {
-            valCol = c;
-            valUnit = u;
-          }
+        const u = classifyValueHeader(h);
+        if (u && !/generat|export|received|surplus|reactive|kvar|kva\b|power factor/.test(norm(h))) {
+          valueCols.push({ col: c, unit: u, header: String(h).trim() });
         }
       }
-      if ((dtCol >= 0 || dateCol >= 0) && valCol >= 0) {
+      if ((dtCol >= 0 || dateCol >= 0) && valueCols.length) {
+        const primary = valueCols.find((v) => v.unit === "kW") || valueCols[0];
         return {
           type: "long",
           headerIdx: i,
-          cols: { datetime: dtCol, date: dateCol, time: timeCol, value: valCol, unit: unitCol },
-          unitGuess: valUnit,
+          cols: { datetime: dtCol, date: dateCol, time: timeCol, value: primary.col, unit: unitCol, valueCols },
+          unitGuess: primary.unit,
           notes
         };
       }
@@ -1241,6 +1252,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     if (intervalMin === STEP_MIN) {
       grid = points;
     } else if (intervalMin < STEP_MIN) {
+      const sub = Math.round(STEP_MIN / intervalMin);
       const t0 = points[0].ms;
       const buckets = /* @__PURE__ */ new Map();
       for (const p of points) {
@@ -1250,9 +1262,11 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         b.n += 1;
         buckets.set(k, b);
       }
-      for (const [k, b] of [...buckets.entries()].sort((a, c) => a[0] - c[0])) {
-        grid.push({ ms: t0 + k * STEP_MS, kw: b.sum / b.n });
+      const ordered = [...buckets.entries()].sort((a, c) => a[0] - c[0]);
+      for (const [k, b] of ordered) {
+        if (b.n === sub) grid.push({ ms: t0 + k * STEP_MS, kw: b.sum / b.n });
       }
+      if (!grid.length) throw new Error("Not enough complete 15-minute periods after resampling.");
     } else {
       const sub = intervalMin / STEP_MIN;
       for (const p of points) {
@@ -1298,17 +1312,32 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
   }
   function parseIntervalRows(rows, fileName = "", overrides = {}) {
     const layout = detectLayout(rows);
-    if (!layout) throw new Error("Could not detect a usable layout (no timestamp + value columns found)");
+    if (!layout) {
+      throw new Error("Could not find a timestamp column plus a kW or kWh value column. Expected either one row per interval (date/time + kW or kWh) or a date \xD7 time-of-day grid.");
+    }
+    const valueCols = layout.cols && layout.cols.valueCols || [];
+    if (overrides.valueCol !== void 0 && overrides.valueCol !== null) {
+      const chosen = valueCols.find((v) => v.col === overrides.valueCol);
+      if (chosen) {
+        layout.cols.value = chosen.col;
+        layout.unitGuess = chosen.unit;
+      }
+    }
     const { records, unit: detectedUnit, notes } = extractRecords(rows, layout);
-    if (records.length < 4) throw new Error(`Only ${records.length} data rows parsed \u2014 not enough to analyze`);
+    if (records.length < 4) throw new Error(`Only ${records.length} data rows parsed \u2014 not enough to analyze.`);
     const detectedIntervalMin = layout.type === "wide" ? inferWideInterval(layout) : detectIntervalMinutes(records);
-    if (!detectedIntervalMin) throw new Error("Could not detect interval length");
+    if (!detectedIntervalMin) throw new Error("Could not detect interval length from the timestamps.");
     const unit = overrides.unit || detectedUnit;
     const intervalMin = overrides.intervalMin || detectedIntervalMin;
     if (![5, 15, 30, 60].includes(intervalMin)) {
-      notes.push(`Unusual interval length detected (${intervalMin} min); expected 5/15/30/60.`);
+      notes.push(`Unusual interval length detected (${intervalMin} min); expected 5/15/30/60. Override below if wrong.`);
+    }
+    let consistency = null;
+    if (layout.type !== "wide" && valueCols.length >= 2) {
+      consistency = crossCheckKwKwh(rows, layout, valueCols, intervalMin, notes);
     }
     const normalized = normalizeTo15MinKw(records, unit, intervalMin);
+    const coverage = describeCoverage(normalized, notes);
     const formatLabel = { wide: "wide (date \xD7 time-of-day columns)", long: "long (one row per interval)", generic: "generic timestamp + value" }[layout.type];
     return {
       normalized,
@@ -1319,13 +1348,71 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         detectedUnit,
         appliedIntervalMin: intervalMin,
         appliedUnit: unit,
+        valueColumns: valueCols.map((v) => ({ col: v.col, unit: v.unit, header: v.header })),
+        selectedValueCol: layout.cols ? layout.cols.value : void 0,
         rowsParsed: records.length,
         gapsFilled: normalized.gapsFilled,
         longestGapIntervals: normalized.longestGapIntervals,
         duplicatesMerged: normalized.duplicatesMerged,
+        coverage,
+        consistency,
         notes
       }
     };
+  }
+  function describeCoverage(normalized, notes) {
+    const { startMs, kw } = normalized;
+    const endMs = startMs + (kw.length - 1) * STEP_MS;
+    const days = kw.length / 96;
+    const isFullYear = days >= 360;
+    const cov = {
+      startMs,
+      endMs,
+      intervals: kw.length,
+      days: Math.round(days * 10) / 10,
+      isFullYear,
+      nativeStepMin: normalized.stepMin
+      // always 15 after normalization
+    };
+    if (days < 360) {
+      notes.push(`Coverage is ${cov.days} days (${(days / 365 * 100).toFixed(0)}% of a year). A full year of data gives the most reliable monthly demand-charge and sizing results.`);
+    } else if (days > 400) {
+      notes.push(`Coverage spans ${cov.days} days (more than a year). Monthly tables list each calendar month separately by year.`);
+    }
+    return cov;
+  }
+  function crossCheckKwKwh(rows, layout, valueCols, intervalMin, notes) {
+    const kwc = valueCols.find((v) => v.unit === "kW");
+    const kwhc = valueCols.find((v) => v.unit === "kWh");
+    if (!kwc || !kwhc) return null;
+    const hours = intervalMin / 60;
+    const ratios = [];
+    const start = layout.headerIdx + 1;
+    for (let i = start; i < rows.length && ratios.length < 500; i++) {
+      const kw = toNumber(rows[i][kwc.col]);
+      const kwh = toNumber(rows[i][kwhc.col]);
+      if (kw && kwh && kw > 0) ratios.push(kwh / kw);
+    }
+    if (ratios.length < 10) return null;
+    ratios.sort((a, b) => a - b);
+    const medianHours = ratios[Math.floor(ratios.length / 2)];
+    const impliedMin = Math.round(medianHours * 60);
+    const agrees = Math.abs(medianHours - hours) / hours < 0.05;
+    const result = {
+      kwCol: kwc.col,
+      kwhCol: kwhc.col,
+      kwHeader: kwc.header,
+      kwhHeader: kwhc.header,
+      medianRatioHours: Math.round(medianHours * 1e3) / 1e3,
+      impliedIntervalMin: impliedMin,
+      agrees
+    };
+    if (agrees) {
+      notes.push(`Cross-check OK: \u201C${kwhc.header}\u201D \xF7 \u201C${kwc.header}\u201D \u2248 ${medianHours.toFixed(2)} h, consistent with ${intervalMin}-min intervals. Using ${kwc.unit === "kW" ? "the kW column" : "kW"}.`);
+    } else {
+      notes.push(`\u26A0 kW/kWh cross-check: \u201C${kwhc.header}\u201D \xF7 \u201C${kwc.header}\u201D \u2248 ${medianHours.toFixed(2)} h (implies ${impliedMin}-min intervals), but intervals look like ${intervalMin} min. Verify the interval length and which column is correct.`);
+    }
+    return result;
   }
   function inferWideInterval(layout) {
     const offs = layout.cols.timeLabels.map((t) => parseTimeOnly(timeStart(t))).filter(Boolean).map((p) => p.hh * 60 + p.mm).sort((a, b) => a - b);
@@ -1395,7 +1482,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         peakKw: m.peakKw,
         peakMs: m.peakMs,
         avgKw: m.sum / m.n,
-        loadFactor: m.sum / m.n / m.peakKw,
+        loadFactor: m.peakKw > 0 ? m.sum / m.n / m.peakKw : 0,
         energyKwh: m.sum * STEP_HOURS,
         intervals: m.n,
         worstDay: {
@@ -1448,7 +1535,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         peakKw,
         peakMs,
         avgKw,
-        loadFactor: avgKw / peakKw,
+        loadFactor: peakKw > 0 ? avgKw / peakKw : 0,
         totalKwh
       },
       monthly,
@@ -1631,6 +1718,14 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         gapsFilled: 0,
         longestGapIntervals: 0,
         duplicatesMerged: 0,
+        coverage: {
+          startMs,
+          endMs: startMs + (kw.length - 1) * 15 * 6e4,
+          intervals: kw.length,
+          days: Math.round(kw.length / 96 * 10) / 10,
+          isFullYear: kw.length / 96 >= 360,
+          nativeStepMin: STEP_MIN2
+        },
         reference: {
           stateId,
           typeId,
@@ -1698,8 +1793,9 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       el(
         "div",
         { class: "muted", style: "margin-top:6px" },
-        "CSV / XLSX \u2014 Green Button exports, SCE & SDG&E formats, or generic timestamp + kW/kWh. ",
-        "Auto-detects 15/30/60-min intervals and normalizes to 15-min kW."
+        "CSV or Excel \u2014 a full year of 15-minute data works best. ",
+        "Auto-detects Green Button, SCE & SDG&E exports, or any file with a timestamp plus a kW and/or kWh column. ",
+        "5/30/60-min data is accepted and normalized to 15-min."
       )
     );
     dz.addEventListener("click", () => input.click());
@@ -1713,7 +1809,40 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       dz.classList.remove("dragover");
       if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0], panel);
     });
-    return el("div", { class: "panel" }, el("h2", {}, "Interval Data Upload"), dz, input);
+    const templateBtn = el("button", { class: "ghost-sm", onclick: downloadTemplate }, "\u2193 Download CSV template");
+    return el(
+      "div",
+      { class: "panel" },
+      el("h2", {}, "Interval Data Upload"),
+      dz,
+      input,
+      el(
+        "div",
+        { class: "muted", style: "margin-top:8px" },
+        el("b", {}, "Expected columns: "),
+        "a timestamp (e.g. ",
+        el("code", {}, "2024-01-01 00:15"),
+        ") and a value column headed ",
+        el("code", {}, "kW"),
+        ", ",
+        el("code", {}, "kWh"),
+        ", or both. If both are present we use kW and cross-check them. ",
+        templateBtn
+      )
+    );
+  }
+  function downloadTemplate() {
+    const lines = ["Timestamp,kW,kWh"];
+    const start = new Date(2024, 0, 1);
+    for (let i = 0; i < 96; i++) {
+      const d = new Date(start.getTime() + i * 15 * 6e4);
+      const hour = d.getHours();
+      const kw = Math.round((120 + 90 * Math.sin((hour - 6) / 24 * 2 * Math.PI)) * 100) / 100;
+      const ts = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      lines.push(`${ts},${kw},${Math.round(kw * 0.25 * 1e3) / 1e3}`);
+    }
+    lines.push("# \u2026 continue for a full year (35,040 rows at 15-min). Keep either kW, kWh, or both columns.");
+    downloadFile("interval-data-template.csv", lines.join("\n"), "text/csv");
   }
   function referencePanel(panel) {
     const lib = profileLibrary();
@@ -1841,7 +1970,41 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
   }
   function detectionPanel(panel) {
     const s = getSite().intervals.source;
-    const gapPct = s.gapsFilled / (s.gapsFilled + s.rowsParsed);
+    const isReference = !!s.reference;
+    const gapPct = s.gapsFilled / (s.gapsFilled + s.rowsParsed || 1);
+    const cov = s.coverage;
+    const chip = (ok, okText, badText) => el("span", { class: ok ? "check-ok" : "check-warn" }, (ok ? "\u2713 " : "\u26A0 ") + (ok ? okText : badText));
+    const checks = el(
+      "div",
+      { class: "checks" },
+      chip(
+        s.appliedIntervalMin === 15,
+        "15-minute intervals",
+        `${s.appliedIntervalMin}-min intervals (normalized to 15-min)`
+      ),
+      cov ? chip(cov.isFullYear, `Full year \u2014 ${cov.days} days`, `${cov.days} days (not a full year)`) : null,
+      chip(gapPct <= 0.02, gapPosLabel(s), gapPosLabel(s)),
+      el("span", { class: "check-ok" }, `\u2713 Reads as ${s.appliedUnit}`),
+      s.consistency ? chip(
+        s.consistency.agrees,
+        `kW vs kWh cross-check passed (\u2248${s.consistency.medianRatioHours} h)`,
+        `kW vs kWh mismatch (\u2248${s.consistency.medianRatioHours} h \u2192 ${s.consistency.impliedIntervalMin} min)`
+      ) : null
+    );
+    const controls = [];
+    let colSel = null;
+    if (s.valueColumns && s.valueColumns.length > 1) {
+      colSel = el(
+        "select",
+        {},
+        ...s.valueColumns.map((v) => {
+          const o = el("option", { value: v.col }, `${v.header} (${v.unit})`);
+          if (v.col === s.selectedValueCol) o.selected = true;
+          return o;
+        })
+      );
+      controls.push(el("label", { class: "field" }, "Value column:", colSel));
+    }
     const unitSel = el(
       "select",
       {},
@@ -1854,30 +2017,43 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     const intSel = el(
       "select",
       {},
-      ...[15, 30, 60].map((m) => {
+      ...[5, 15, 30, 60].map((m) => {
         const o = el("option", { value: m }, `${m} min`);
         if (m === s.appliedIntervalMin) o.selected = true;
         return o;
       })
     );
-    const reBtn = el("button", { class: "action", onclick: () => {
-      if (!lastRows) {
-        alert("Original file is no longer in memory \u2014 re-upload it to change interpretation.");
-        return;
-      }
-      process(lastRows, lastFileName, panel, { unit: unitSel.value, intervalMin: +intSel.value });
-    } }, "Re-process");
+    controls.push(
+      el("label", { class: "field" }, "Unit:", unitSel),
+      el("label", { class: "field" }, "Interval:", intSel),
+      el("button", { class: "action", onclick: () => {
+        if (!lastRows) {
+          alert("Original file is no longer in memory \u2014 re-upload it to change interpretation.");
+          return;
+        }
+        const ov = { unit: unitSel.value, intervalMin: +intSel.value };
+        if (colSel) ov.valueCol = +colSel.value;
+        process(lastRows, lastFileName, panel, ov);
+      } }, "Re-process")
+    );
+    const warnNotes = (s.notes || []).filter((n) => /^⚠/.test(n));
+    const infoNotes = (s.notes || []).filter((n) => !/^⚠/.test(n));
     return el(
       "div",
       { class: "panel" },
-      el("h2", {}, "Detection Summary"),
+      el("h2", {}, "What We Read From Your File"),
+      checks,
       el(
         "table",
-        { class: "data", style: "max-width:680px" },
+        { class: "data", style: "max-width:720px;margin-top:10px" },
         tr("File", s.fileName),
         tr("Layout", s.format),
-        tr("Detected interval", `${s.detectedIntervalMin} min`),
-        tr("Detected unit", s.detectedUnit),
+        cov ? tr("Date range", `${new Date(cov.startMs).toLocaleDateString()} \u2013 ${new Date(cov.endMs).toLocaleDateString()}`) : null,
+        tr("Native interval", `${s.detectedIntervalMin} min`),
+        trNode(
+          "Value column used",
+          el("span", {}, valueColLabel(s))
+        ),
         tr("Rows parsed", s.rowsParsed.toLocaleString()),
         tr("Duplicate timestamps merged", s.duplicatesMerged.toLocaleString()),
         trNode(
@@ -1885,24 +2061,41 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
           el(
             "span",
             { class: s.gapsFilled ? gapPct > 0.02 ? "warn" : "" : "ok" },
-            `${s.gapsFilled.toLocaleString()} intervals` + (s.gapsFilled ? ` (longest gap ${(s.longestGapIntervals * 15 / 60).toFixed(1)} h)` : "")
+            `${s.gapsFilled.toLocaleString()} intervals` + (s.gapsFilled ? ` (longest gap ${(s.longestGapIntervals * 15 / 60).toFixed(1)} h)` : " \u2014 none")
           )
         )
       ),
-      s.notes.length ? el(
+      warnNotes.length ? el(
         "div",
         { style: "margin-top:8px" },
-        ...s.notes.map((nt) => el("div", { class: "warn" }, `\u26A0 ${nt}`))
+        ...warnNotes.map((nt) => el("div", { class: "warn" }, nt))
       ) : null,
-      el("h3", {}, "Override interpretation"),
-      el(
+      infoNotes.length ? el(
         "div",
-        {},
-        el("label", { class: "field" }, "Unit:", unitSel),
-        el("label", { class: "field" }, "Interval:", intSel),
-        reBtn
-      )
+        { class: "muted", style: "margin-top:6px" },
+        ...infoNotes.map((nt) => el("div", {}, nt))
+      ) : null,
+      isReference ? null : el("h3", {}, "Override interpretation"),
+      isReference ? null : el(
+        "p",
+        { class: "muted", style: "margin:0 0 6px" },
+        "If anything above looks wrong, correct it here and re-process."
+      ),
+      isReference ? null : el("div", {}, ...controls)
     );
+  }
+  function gapPosLabel(s) {
+    if (!s.gapsFilled) return "No gaps \u2014 complete series";
+    const pct = (s.gapsFilled / (s.gapsFilled + s.rowsParsed) * 100).toFixed(1);
+    return `${s.gapsFilled.toLocaleString()} gap intervals filled (${pct}%)`;
+  }
+  function valueColLabel(s) {
+    if (!s.valueColumns || !s.valueColumns.length) return s.appliedUnit;
+    const sel = s.valueColumns.find((v) => v.col === s.selectedValueCol);
+    const others = s.valueColumns.filter((v) => v.col !== s.selectedValueCol);
+    let label = sel ? `${sel.header} (${sel.unit})` : s.appliedUnit;
+    if (others.length) label += ` \u2014 also available: ${others.map((v) => `${v.header} (${v.unit})`).join(", ")}`;
+    return label;
   }
   function tr(label, value) {
     return el("tr", {}, el("td", {}, label), el("td", {}, value));
@@ -2048,7 +2241,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     let kwhNeed = 0;
     let bindingMonth = null;
     for (const m of analysis.monthly) {
-      const target = Math.max(0, m.peakKw - shaveKw);
+      const target = monthTargetLevel(m, shaveKw);
       const e = energyAbove(worstDayKw(normalized, m), target);
       if (e > kwhNeed) {
         kwhNeed = e;
@@ -2056,6 +2249,9 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       }
     }
     return { shaveKw, kwhNeed, bindingMonth };
+  }
+  function monthTargetLevel(monthEntry, shaveKw) {
+    return Math.max(monthEntry.avgKw, monthEntry.peakKw - shaveKw);
   }
   function worstDayKw(normalized, monthEntry) {
     const { profileStartIdx, profileLength } = monthEntry.worstDay;
@@ -2086,7 +2282,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     const perMonth = [];
     for (const m of analysis.monthly) {
       const day = worstDayKw(normalized, m);
-      const target = Math.max(0, m.peakKw - shaveKw);
+      const target = monthTargetLevel(m, shaveKw);
       const desired = m.peakKw - target;
       const level = Math.max(achievableLevel(day, config.kw, config.kwh), target);
       const captured = Math.min(desired, Math.max(0, m.peakKw - level));
@@ -2518,16 +2714,19 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     if (!(eff > 0 && eff <= 1)) throw new Error(`round-trip efficiency out of range: ${eff}`);
     const chargeCap = Math.min(params.maxChargeKw || Infinity, config.maxChargeKw || config.kw);
     const windows = params.chargeWindows || [];
-    const targets = new Map(analysis.monthly.map((m) => [m.key, Math.max(0, m.peakKw - shaveKw)]));
+    const targets = new Map(analysis.monthly.map((m) => [m.key, monthTargetLevel(m, shaveKw)]));
     const { startMs, kw } = normalized;
     const n = kw.length;
     const shaved = new Float64Array(n);
     const socSeries = new Float64Array(n);
+    const dayRanges = dayBoundaries(startMs, n);
     let soc = config.kwh;
     let totalDischarge = 0;
     let totalChargeGrid = 0;
     let inMissRun = false;
+    let dischargeFloor = 0;
     const months = /* @__PURE__ */ new Map();
+    let dayPtr = 0;
     for (let i = 0; i < n; i++) {
       const d = new Date(startMs + i * STEP_MS3);
       const mk = monthKeyOf(d);
@@ -2538,41 +2737,43 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         inMissRun = false;
       }
       const target = rec.targetKw;
+      if (dayPtr < dayRanges.length && i === dayRanges[dayPtr].start) {
+        const day = kw.slice(dayRanges[dayPtr].start, dayRanges[dayPtr].end);
+        dischargeFloor = Math.max(target, achievableLevel(day, config.kw, soc));
+        dayPtr++;
+      }
       const load = kw[i];
       const h = d.getHours();
       let served = load;
-      if (load > target + 1e-9) {
-        const want = load - target;
+      if (load > dischargeFloor + 1e-9) {
+        const want = load - dischargeFloor;
         const discharge = Math.min(want, config.kw, soc / STEP_HOURS4);
         soc -= discharge * STEP_HOURS4;
         served = load - discharge;
         totalDischarge += discharge * STEP_HOURS4;
         rec.dischargeKwh += discharge * STEP_HOURS4;
         rec.dischargeByHour[h] += discharge * STEP_HOURS4;
-        if (served > target + 1e-6) {
-          rec.missedIntervals += 1;
-          rec.worstShortfallKw = Math.max(rec.worstShortfallKw, served - target);
-          if (!inMissRun) {
-            rec.missedEvents += 1;
-            inMissRun = true;
-          }
-        } else {
-          inMissRun = false;
+      } else if (load < target - 1e-9 && soc < config.kwh - 1e-9 && hourInWindows(h, windows)) {
+        const headroom = target - load;
+        const roomKw = (config.kwh - soc) / (STEP_HOURS4 * eff);
+        const charge = Math.max(0, Math.min(chargeCap, headroom, roomKw));
+        if (charge > 0) {
+          soc += charge * STEP_HOURS4 * eff;
+          served = load + charge;
+          totalChargeGrid += charge * STEP_HOURS4;
+          rec.chargeKwh += charge * STEP_HOURS4;
+          rec.chargeByHour[h] += charge * STEP_HOURS4;
+        }
+      }
+      if (served > target + 1e-6) {
+        rec.missedIntervals += 1;
+        rec.worstShortfallKw = Math.max(rec.worstShortfallKw, served - target);
+        if (!inMissRun) {
+          rec.missedEvents += 1;
+          inMissRun = true;
         }
       } else {
         inMissRun = false;
-        if (soc < config.kwh - 1e-9 && hourInWindows(h, windows)) {
-          const headroom = target - load;
-          const roomKw = (config.kwh - soc) / (STEP_HOURS4 * eff);
-          const charge = Math.max(0, Math.min(chargeCap, headroom, roomKw));
-          if (charge > 0) {
-            soc += charge * STEP_HOURS4 * eff;
-            served = load + charge;
-            totalChargeGrid += charge * STEP_HOURS4;
-            rec.chargeKwh += charge * STEP_HOURS4;
-            rec.chargeByHour[h] += charge * STEP_HOURS4;
-          }
-        }
       }
       shaved[i] = served;
       socSeries[i] = soc;
@@ -2594,11 +2795,29 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       cycles: config.kwh > 0 ? totalDischarge / config.kwh : 0,
       missedIntervals: monthly.reduce((s, m) => s + m.missedIntervals, 0),
       missedEvents: monthly.reduce((s, m) => s + m.missedEvents, 0),
-      avgRealizedReductionKw: monthly.reduce((s, m) => s + m.realizedReductionKw, 0) / monthly.length,
-      avgTheoreticalReductionKw: monthly.reduce((s, m) => s + m.theoreticalReductionKw, 0) / monthly.length,
+      avgRealizedReductionKw: monthly.length ? monthly.reduce((s, m) => s + m.realizedReductionKw, 0) / monthly.length : 0,
+      avgTheoreticalReductionKw: monthly.length ? monthly.reduce((s, m) => s + m.theoreticalReductionKw, 0) / monthly.length : 0,
       finalSocKwh: soc
     };
     return { monthly, annual, series: { shavedKw: shaved, soc: socSeries } };
+  }
+  function dayBoundaries(startMs, n) {
+    const ranges = [];
+    let start = 0;
+    let curKey = dayKeyOf(new Date(startMs));
+    for (let i = 1; i < n; i++) {
+      const key = dayKeyOf(new Date(startMs + i * STEP_MS3));
+      if (key !== curKey) {
+        ranges.push({ start, end: i });
+        start = i;
+        curKey = key;
+      }
+    }
+    ranges.push({ start, end: n });
+    return ranges;
+  }
+  function dayKeyOf(d) {
+    return d.getFullYear() * 1e4 + d.getMonth() * 100 + d.getDate();
   }
 
   // src/modules/dispatch/index.js
@@ -2723,9 +2942,12 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       el(
         "p",
         { class: "muted", style: "margin:8px 0 0" },
-        "Greedy threshold dispatch: discharge whenever load exceeds the month\u2019s target level (month peak \u2212 shave); ",
-        "charge when below it, capped so charging never creates a new peak above the target. ",
-        "Losses are booked on the charging side; battery starts the year full."
+        "Peak-aware dispatch: each day the battery reserves its stored energy for that day\u2019s peak, shaving down to ",
+        "the month\u2019s target level (max of the monthly average and peak \u2212 shave) where energy allows, and to the ",
+        "lowest flat level it can hold otherwise \u2014 it does not drain on the shoulders. It recharges when load is below ",
+        "the target (within any charge windows), capped so charging never creates a new peak. Round-trip losses are ",
+        "booked on the charging side; the battery starts the year full. Where overnight recharge can\u2019t fully refill, ",
+        "realized reduction falls below the sizing estimate \u2014 that gap is a real operational limit, shown per month below."
       ),
       ...flags.map((f) => el("div", { class: "warn", style: "margin-top:6px" }, `\u26A0 ${f}`))
     );

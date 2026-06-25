@@ -21,11 +21,29 @@ export function theoreticalRequirement(normalized, analysis, targetShavePct) {
   let kwhNeed = 0;
   let bindingMonth = null;
   for (const m of analysis.monthly) {
-    const target = Math.max(0, m.peakKw - shaveKw);
+    const target = monthTargetLevel(m, shaveKw);
     const e = energyAbove(worstDayKw(normalized, m), target);
     if (e > kwhNeed) { kwhNeed = e; bindingMonth = m.key; }
   }
   return { shaveKw, kwhNeed, bindingMonth };
+}
+
+/**
+ * The demand level a worst day is shaved down to in a given month.
+ *
+ * We shave the peak DOWN TOWARD the month's average by up to shaveKw, but never
+ * below the month's average demand — this is peak shaving, not baseload
+ * shifting (the spec's "peak minus average" methodology). Flooring at the
+ * monthly average also prevents the degenerate case where shaveKw (derived from
+ * the ANNUAL peak−average) exceeds a low month's peak, which would otherwise
+ * ask the battery to flatten that month's entire baseload to zero and wildly
+ * overstate the energy requirement.
+ *
+ * The SAME definition is used by sizing capture and the dispatch simulator so
+ * "what sizing promises" matches "what dispatch delivers."
+ */
+export function monthTargetLevel(monthEntry, shaveKw) {
+  return Math.max(monthEntry.avgKw, monthEntry.peakKw - shaveKw);
 }
 
 /** Slice the worst-day kW profile for a monthly analysis entry. */
@@ -70,7 +88,7 @@ export function captureRate(normalized, analysis, shaveKw, config) {
   const perMonth = [];
   for (const m of analysis.monthly) {
     const day = worstDayKw(normalized, m);
-    const target = Math.max(0, m.peakKw - shaveKw);
+    const target = monthTargetLevel(m, shaveKw);
     const desired = m.peakKw - target;
     const level = Math.max(achievableLevel(day, config.kw, config.kwh), target);
     const captured = Math.min(desired, Math.max(0, m.peakKw - level));

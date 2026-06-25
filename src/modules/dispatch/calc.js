@@ -1,9 +1,14 @@
 // Dispatch simulation math. Pure functions (Node-testable).
 //
 // Model (flagged assumptions, surfaced in the UI):
-// - Greedy threshold dispatch: discharge whenever load exceeds the month's
-//   target level; charge whenever load is below it (within charge windows),
-//   capped so charging NEVER pushes site demand above the target level.
+// - Peak-aware threshold dispatch: each day the battery reserves its stored
+//   energy for that day's peak. The day's discharge threshold is the lowest
+//   flat level the current SOC can hold (achievableLevel), floored at the
+//   month target — so it shaves the top off the peak instead of draining on
+//   the shoulders. Charge whenever load is below the month target (within
+//   charge windows), capped so charging NEVER pushes demand above the target.
+//   This makes the simulated reduction reconcile with the sizing estimate
+//   (which assumes optimal daily dispatch).
 // - Round-trip losses are applied entirely on the charging side: grid kWh ×
 //   efficiency goes into storage; discharge draws 1:1 from storage. Total
 //   losses are identical to splitting the efficiency across both legs.
@@ -11,7 +16,11 @@
 // - One aggregate battery per interval either charges or discharges, never
 //   both — so the simultaneous-charge/discharge unit flag is structurally
 //   honored. canParallel is enforced upstream in candidate generation.
-// - Monthly target level = month peak − shave kW (same definition as sizing).
+// - Monthly target level = max(month average, month peak − shave kW) — the
+//   SAME definition as sizing (see monthTargetLevel), so dispatch results
+//   reconcile with the sizing capture estimate.
+
+import { monthTargetLevel, achievableLevel } from '../sizing/calc.js';
 
 const STEP_HOURS = 0.25;
 const STEP_MS = 15 * 60000;
@@ -63,19 +72,28 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
   const chargeCap = Math.min(params.maxChargeKw || Infinity, config.maxChargeKw || config.kw);
   const windows = params.chargeWindows || [];
 
-  const targets = new Map(analysis.monthly.map((m) => [m.key, Math.max(0, m.peakKw - shaveKw)]));
+  const targets = new Map(analysis.monthly.map((m) => [m.key, monthTargetLevel(m, shaveKw)]));
 
   const { startMs, kw } = normalized;
   const n = kw.length;
   const shaved = new Float64Array(n);
   const socSeries = new Float64Array(n);
 
+  // Day boundaries (local calendar days) so we can reserve each day's stored
+  // energy for that day's actual peak instead of discharging greedily on the
+  // shoulders and stranding nothing for the peak. This is how real peak-shaving
+  // controllers behave (they forecast the daily peak) and it reconciles the
+  // simulated reduction with the sizing capture estimate.
+  const dayRanges = dayBoundaries(startMs, n);
+
   let soc = config.kwh; // start full
   let totalDischarge = 0;
   let totalChargeGrid = 0;
   let inMissRun = false;
+  let dischargeFloor = 0; // today's discharge threshold (>= month target)
 
   const months = new Map();
+  let dayPtr = 0;
 
   for (let i = 0; i < n; i++) {
     const d = new Date(startMs + i * STEP_MS);
@@ -87,40 +105,52 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
       inMissRun = false;
     }
     const target = rec.targetKw;
+
+    // At the start of each day, set the discharge threshold from the energy
+    // available NOW: shave the day's peak down to the lowest flat level this
+    // SOC can hold, but never below the month target. Loads above the month
+    // target but below this floor (when energy-limited) are honest misses.
+    if (dayPtr < dayRanges.length && i === dayRanges[dayPtr].start) {
+      const day = kw.slice(dayRanges[dayPtr].start, dayRanges[dayPtr].end);
+      dischargeFloor = Math.max(target, achievableLevel(day, config.kw, soc));
+      dayPtr++;
+    }
+
     const load = kw[i];
     const h = d.getHours();
     let served = load;
 
-    if (load > target + 1e-9) {
-      // Discharge to hold the target, limited by power rating and stored energy
-      const want = load - target;
+    if (load > dischargeFloor + 1e-9) {
+      // Discharge to hold today's threshold, limited by power and stored energy
+      const want = load - dischargeFloor;
       const discharge = Math.min(want, config.kw, soc / STEP_HOURS);
       soc -= discharge * STEP_HOURS;
       served = load - discharge;
       totalDischarge += discharge * STEP_HOURS;
       rec.dischargeKwh += discharge * STEP_HOURS;
       rec.dischargeByHour[h] += discharge * STEP_HOURS;
-      if (served > target + 1e-6) {
-        rec.missedIntervals += 1;
-        rec.worstShortfallKw = Math.max(rec.worstShortfallKw, served - target);
-        if (!inMissRun) { rec.missedEvents += 1; inMissRun = true; }
-      } else {
-        inMissRun = false;
+    } else if (load < target - 1e-9 && soc < config.kwh - 1e-9 && hourInWindows(h, windows)) {
+      // Charge when load is below the month target (never create a new peak)
+      const headroom = target - load;
+      const roomKw = (config.kwh - soc) / (STEP_HOURS * eff);
+      const charge = Math.max(0, Math.min(chargeCap, headroom, roomKw));
+      if (charge > 0) {
+        soc += charge * STEP_HOURS * eff;
+        served = load + charge;
+        totalChargeGrid += charge * STEP_HOURS;
+        rec.chargeKwh += charge * STEP_HOURS;
+        rec.chargeByHour[h] += charge * STEP_HOURS;
       }
+    }
+
+    // Missed peak: load couldn't be held to the month target this interval
+    // (config power/energy too small — the day floor sits above the target).
+    if (served > target + 1e-6) {
+      rec.missedIntervals += 1;
+      rec.worstShortfallKw = Math.max(rec.worstShortfallKw, served - target);
+      if (!inMissRun) { rec.missedEvents += 1; inMissRun = true; }
     } else {
       inMissRun = false;
-      if (soc < config.kwh - 1e-9 && hourInWindows(h, windows)) {
-        const headroom = target - load; // never charge above the target level
-        const roomKw = (config.kwh - soc) / (STEP_HOURS * eff);
-        const charge = Math.max(0, Math.min(chargeCap, headroom, roomKw));
-        if (charge > 0) {
-          soc += charge * STEP_HOURS * eff;
-          served = load + charge;
-          totalChargeGrid += charge * STEP_HOURS;
-          rec.chargeKwh += charge * STEP_HOURS;
-          rec.chargeByHour[h] += charge * STEP_HOURS;
-        }
-      }
     }
 
     shaved[i] = served;
@@ -145,10 +175,27 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
     cycles: config.kwh > 0 ? totalDischarge / config.kwh : 0,
     missedIntervals: monthly.reduce((s, m) => s + m.missedIntervals, 0),
     missedEvents: monthly.reduce((s, m) => s + m.missedEvents, 0),
-    avgRealizedReductionKw: monthly.reduce((s, m) => s + m.realizedReductionKw, 0) / monthly.length,
-    avgTheoreticalReductionKw: monthly.reduce((s, m) => s + m.theoreticalReductionKw, 0) / monthly.length,
+    avgRealizedReductionKw: monthly.length ? monthly.reduce((s, m) => s + m.realizedReductionKw, 0) / monthly.length : 0,
+    avgTheoreticalReductionKw: monthly.length ? monthly.reduce((s, m) => s + m.theoreticalReductionKw, 0) / monthly.length : 0,
     finalSocKwh: soc,
   };
 
   return { monthly, annual, series: { shavedKw: shaved, soc: socSeries } };
+}
+
+/** Index ranges [start, end) for each local calendar day in the series. */
+function dayBoundaries(startMs, n) {
+  const ranges = [];
+  let start = 0;
+  let curKey = dayKeyOf(new Date(startMs));
+  for (let i = 1; i < n; i++) {
+    const key = dayKeyOf(new Date(startMs + i * STEP_MS));
+    if (key !== curKey) { ranges.push({ start, end: i }); start = i; curKey = key; }
+  }
+  ranges.push({ start, end: n });
+  return ranges;
+}
+
+function dayKeyOf(d) {
+  return d.getFullYear() * 10000 + d.getMonth() * 100 + d.getDate();
 }

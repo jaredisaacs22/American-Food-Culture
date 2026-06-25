@@ -225,8 +225,11 @@ export function detectLayout(rows) {
       };
     }
 
-    // Long format: find date/time/value columns by header text
-    let dtCol = -1, dateCol = -1, timeCol = -1, valCol = -1, unitCol = -1, valUnit = null;
+    // Long format: find date/time columns + ALL value columns by header text.
+    // A file may carry kW, kWh, or BOTH — we collect every value column so the
+    // user can switch, and so we can cross-check kW against kWh.
+    let dtCol = -1, dateCol = -1, timeCol = -1, unitCol = -1;
+    const valueCols = []; // [{ col, unit, header }]
     for (let c = 0; c < row.length; c++) {
       const h = row[c];
       if (h.trim() === '') continue;
@@ -234,17 +237,20 @@ export function detectLayout(rows) {
       if (dateCol < 0 && DATE_HEADERS.includes(norm(h))) { dateCol = c; continue; }
       if (timeCol < 0 && headerMatches(h, TIME_HEADERS) && norm(h) !== 'datetime') { timeCol = c; continue; }
       if (unitCol < 0 && UNIT_COL_HEADERS.includes(norm(h))) { unitCol = c; continue; }
-      if (valCol < 0) {
-        const u = classifyValueHeader(h);
-        // Skip generation/export columns on net meters; prefer consumption
-        if (u && !/generat|export|received|surplus/.test(norm(h))) { valCol = c; valUnit = u; }
+      const u = classifyValueHeader(h);
+      // Skip generation/export columns on net meters; prefer consumption
+      if (u && !/generat|export|received|surplus|reactive|kvar|kva\b|power factor/.test(norm(h))) {
+        valueCols.push({ col: c, unit: u, header: String(h).trim() });
       }
     }
-    if ((dtCol >= 0 || dateCol >= 0) && valCol >= 0) {
+    if ((dtCol >= 0 || dateCol >= 0) && valueCols.length) {
+      // Primary value column: prefer kW (already demand, no conversion), else
+      // the first kWh, else whatever we found.
+      const primary = valueCols.find((v) => v.unit === 'kW') || valueCols[0];
       return {
         type: 'long', headerIdx: i,
-        cols: { datetime: dtCol, date: dateCol, time: timeCol, value: valCol, unit: unitCol },
-        unitGuess: valUnit, notes,
+        cols: { datetime: dtCol, date: dateCol, time: timeCol, value: primary.col, unit: unitCol, valueCols },
+        unitGuess: primary.unit, notes,
       };
     }
   }
@@ -380,7 +386,12 @@ export function normalizeTo15MinKw(records, unit, intervalMin) {
   if (intervalMin === STEP_MIN) {
     grid = points;
   } else if (intervalMin < STEP_MIN) {
-    // e.g. 5-min: average into 15-min buckets anchored at first timestamp
+    // e.g. 5-min: average into 15-min buckets anchored at first timestamp.
+    // Only COMPLETE buckets are emitted; a partial bucket (end of file or an
+    // internal sub-interval gap) is left out so it becomes a gap the
+    // interpolation step fills — averaging a partial bucket over a full 15-min
+    // window would inflate that window's energy.
+    const sub = Math.round(STEP_MIN / intervalMin);
     const t0 = points[0].ms;
     const buckets = new Map();
     for (const p of points) {
@@ -389,9 +400,11 @@ export function normalizeTo15MinKw(records, unit, intervalMin) {
       b.sum += p.kw; b.n += 1;
       buckets.set(k, b);
     }
-    for (const [k, b] of [...buckets.entries()].sort((a, c) => a[0] - c[0])) {
-      grid.push({ ms: t0 + k * STEP_MS, kw: b.sum / b.n });
+    const ordered = [...buckets.entries()].sort((a, c) => a[0] - c[0]);
+    for (const [k, b] of ordered) {
+      if (b.n === sub) grid.push({ ms: t0 + k * STEP_MS, kw: b.sum / b.n });
     }
+    if (!grid.length) throw new Error('Not enough complete 15-minute periods after resampling.');
   } else {
     // 30/60-min: hold kW constant across sub-intervals
     const sub = intervalMin / STEP_MIN;
@@ -445,27 +458,46 @@ export function normalizeTo15MinKw(records, unit, intervalMin) {
 
 /**
  * Parse rows (array of arrays) into a normalized 15-min kW series.
- * overrides: { unit?: 'kW'|'kWh', intervalMin?: number } from the UI.
+ * overrides: { unit?: 'kW'|'kWh', intervalMin?: number, valueCol?: number }.
  */
 export function parseIntervalRows(rows, fileName = '', overrides = {}) {
   const layout = detectLayout(rows);
-  if (!layout) throw new Error('Could not detect a usable layout (no timestamp + value columns found)');
+  if (!layout) {
+    throw new Error('Could not find a timestamp column plus a kW or kWh value column. ' +
+      'Expected either one row per interval (date/time + kW or kWh) or a date × time-of-day grid.');
+  }
+
+  // Honor an explicit value-column choice (when a file has both kW and kWh).
+  const valueCols = (layout.cols && layout.cols.valueCols) || [];
+  if (overrides.valueCol !== undefined && overrides.valueCol !== null) {
+    const chosen = valueCols.find((v) => v.col === overrides.valueCol);
+    if (chosen) { layout.cols.value = chosen.col; layout.unitGuess = chosen.unit; }
+  }
 
   const { records, unit: detectedUnit, notes } = extractRecords(rows, layout);
-  if (records.length < 4) throw new Error(`Only ${records.length} data rows parsed — not enough to analyze`);
+  if (records.length < 4) throw new Error(`Only ${records.length} data rows parsed — not enough to analyze.`);
 
   const detectedIntervalMin = layout.type === 'wide'
     ? inferWideInterval(layout)
     : detectIntervalMinutes(records);
-  if (!detectedIntervalMin) throw new Error('Could not detect interval length');
+  if (!detectedIntervalMin) throw new Error('Could not detect interval length from the timestamps.');
 
   const unit = overrides.unit || detectedUnit;
   const intervalMin = overrides.intervalMin || detectedIntervalMin;
   if (![5, 15, 30, 60].includes(intervalMin)) {
-    notes.push(`Unusual interval length detected (${intervalMin} min); expected 5/15/30/60.`);
+    notes.push(`Unusual interval length detected (${intervalMin} min); expected 5/15/30/60. Override below if wrong.`);
+  }
+
+  // Cross-check kW against kWh when both columns are present: for a clean
+  // dataset, kWh ≈ kW × intervalHours. A mismatch flags a wrong interval or
+  // mislabeled column before any downstream math runs.
+  let consistency = null;
+  if (layout.type !== 'wide' && valueCols.length >= 2) {
+    consistency = crossCheckKwKwh(rows, layout, valueCols, intervalMin, notes);
   }
 
   const normalized = normalizeTo15MinKw(records, unit, intervalMin);
+  const coverage = describeCoverage(normalized, notes);
 
   const formatLabel = { wide: 'wide (date × time-of-day columns)', long: 'long (one row per interval)', generic: 'generic timestamp + value' }[layout.type];
   return {
@@ -477,13 +509,73 @@ export function parseIntervalRows(rows, fileName = '', overrides = {}) {
       detectedUnit,
       appliedIntervalMin: intervalMin,
       appliedUnit: unit,
+      valueColumns: valueCols.map((v) => ({ col: v.col, unit: v.unit, header: v.header })),
+      selectedValueCol: layout.cols ? layout.cols.value : undefined,
       rowsParsed: records.length,
       gapsFilled: normalized.gapsFilled,
       longestGapIntervals: normalized.longestGapIntervals,
       duplicatesMerged: normalized.duplicatesMerged,
+      coverage,
+      consistency,
       notes,
     },
   };
+}
+
+/** Days/coverage summary so the user can confirm a full year at 15-min. */
+function describeCoverage(normalized, notes) {
+  const { startMs, kw } = normalized;
+  const endMs = startMs + (kw.length - 1) * STEP_MS;
+  const days = kw.length / 96;
+  const isFullYear = days >= 360; // a full year or more
+  const cov = {
+    startMs,
+    endMs,
+    intervals: kw.length,
+    days: Math.round(days * 10) / 10,
+    isFullYear,
+    nativeStepMin: normalized.stepMin, // always 15 after normalization
+  };
+  if (days < 360) {
+    notes.push(`Coverage is ${cov.days} days (${(days / 365 * 100).toFixed(0)}% of a year). ` +
+      'A full year of data gives the most reliable monthly demand-charge and sizing results.');
+  } else if (days > 400) {
+    notes.push(`Coverage spans ${cov.days} days (more than a year). Monthly tables list each calendar month separately by year.`);
+  }
+  return cov;
+}
+
+/** Compare a kW column and a kWh column on the same rows. */
+function crossCheckKwKwh(rows, layout, valueCols, intervalMin, notes) {
+  const kwc = valueCols.find((v) => v.unit === 'kW');
+  const kwhc = valueCols.find((v) => v.unit === 'kWh');
+  if (!kwc || !kwhc) return null;
+  const hours = intervalMin / 60;
+  const ratios = [];
+  const start = layout.headerIdx + 1;
+  for (let i = start; i < rows.length && ratios.length < 500; i++) {
+    const kw = toNumber(rows[i][kwc.col]);
+    const kwh = toNumber(rows[i][kwhc.col]);
+    if (kw && kwh && kw > 0) ratios.push(kwh / kw); // kWh/kW should ≈ hours
+  }
+  if (ratios.length < 10) return null;
+  ratios.sort((a, b) => a - b);
+  const medianHours = ratios[Math.floor(ratios.length / 2)];
+  const impliedMin = Math.round(medianHours * 60);
+  const agrees = Math.abs(medianHours - hours) / hours < 0.05;
+  const result = {
+    kwCol: kwc.col, kwhCol: kwhc.col, kwHeader: kwc.header, kwhHeader: kwhc.header,
+    medianRatioHours: Math.round(medianHours * 1000) / 1000, impliedIntervalMin: impliedMin, agrees,
+  };
+  if (agrees) {
+    notes.push(`Cross-check OK: “${kwhc.header}” ÷ “${kwc.header}” ≈ ${medianHours.toFixed(2)} h, ` +
+      `consistent with ${intervalMin}-min intervals. Using ${kwc.unit === 'kW' ? 'the kW column' : 'kW'}.`);
+  } else {
+    notes.push(`⚠ kW/kWh cross-check: “${kwhc.header}” ÷ “${kwc.header}” ≈ ${medianHours.toFixed(2)} h ` +
+      `(implies ${impliedMin}-min intervals), but intervals look like ${intervalMin} min. ` +
+      'Verify the interval length and which column is correct.');
+  }
+  return result;
 }
 
 function inferWideInterval(layout) {

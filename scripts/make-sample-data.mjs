@@ -69,6 +69,15 @@ const series = [...iterate15min(YEAR)].map((d) => ({ d, kw: loadKw(d) }));
   writeFileSync('sample-data/generic_15min_kw.csv', lines.join('\n'));
 }
 
+// 1b) Generic 15-min with BOTH kW and kWh columns (tests dual-column + cross-check)
+{
+  const lines = ['Timestamp,kW,kWh'];
+  for (const { d, kw } of series) {
+    lines.push(`${isoLocal(d)},${kw.toFixed(2)},${(kw * 0.25).toFixed(3)}`);
+  }
+  writeFileSync('sample-data/generic_15min_kw_and_kwh.csv', lines.join('\n'));
+}
+
 // 2) Generic hourly kWh (tests 60-min + kWh->kW + expansion)
 {
   const lines = ['Timestamp,Usage (kWh)'];
@@ -131,4 +140,4 @@ const series = [...iterate15min(YEAR)].map((d) => ({ d, kw: loadKw(d) }));
   writeFileSync('sample-data/greenbutton_style.csv', lines.join('\n'));
 }
 
-console.log('sample-data/ written: 5 files for year', YEAR);
+console.log('sample-data/ written: 6 files for year', YEAR);

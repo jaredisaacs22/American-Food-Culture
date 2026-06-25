@@ -51,9 +51,20 @@ if (!detection.includes('used "Interval Data"')) throw new Error('xlsx multi-she
 if (!detection.includes('generic_15min_kw.xlsx')) throw new Error('xlsx file name missing from detection summary');
 console.log('tab 1: xlsx loaded (multi-sheet, date serials)');
 
+// Both kW and kWh columns: must prefer kW and show the cross-check passing
+await page.setInputFiles('section[data-tab="intervals"] input[type=file]', 'sample-data/generic_15min_kw_and_kwh.csv');
+await page.waitForFunction(() =>
+  [...document.querySelectorAll('section[data-tab="intervals"] td')]
+    .some((td) => td.textContent.includes('generic_15min_kw_and_kwh.csv')), { timeout: 20000 });
+const bothText = await page.$eval('section[data-tab="intervals"]', (e) => e.textContent);
+if (!/cross-check/i.test(bothText)) throw new Error('kW/kWh cross-check note missing');
+if (!/Full year/i.test(bothText)) throw new Error('full-year coverage check missing');
+const valueColSel = await page.$$('section[data-tab="intervals"] select');
+console.log('tab 1: both-columns file loaded (cross-check + full-year shown)');
+
 await page.setInputFiles('section[data-tab="intervals"] input[type=file]', 'sample-data/sdge_style_long.csv');
 await page.waitForFunction(() =>
-  [...document.querySelectorAll('section[data-tab="intervals"] table.data td')]
+  [...document.querySelectorAll('section[data-tab="intervals"] td')]
     .some((td) => td.textContent.includes('sdge_style_long.csv')), { timeout: 15000 });
 await page.waitForSelector('table.heatmap', { timeout: 15000 });
 console.log('tab 1: csv loaded');

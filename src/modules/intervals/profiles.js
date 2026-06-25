@@ -72,6 +72,11 @@ export function loadReferenceProfile(stateId, typeId, scaleBy, year = library.me
       gapsFilled: 0,
       longestGapIntervals: 0,
       duplicatesMerged: 0,
+      coverage: {
+        startMs, endMs: startMs + (kw.length - 1) * 15 * 60000,
+        intervals: kw.length, days: Math.round((kw.length / 96) * 10) / 10,
+        isFullYear: kw.length / 96 >= 360, nativeStepMin: STEP_MIN,
+      },
       reference: {
         stateId, typeId, typeLabel, year,
         scaledBy: scaleBy.mode, scaleValue: scaleBy.value,

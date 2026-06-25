@@ -78,16 +78,19 @@ test('hand-computed: power-limited shortfall is a missed event', () => {
   assert.ok(Math.abs(m.realizedReductionKw - 60) < 1e-6);
 });
 
-test('hand-computed: energy-limited shortfall (battery runs dry)', () => {
+test('hand-computed: energy-limited shortfall spreads charge across the peak', () => {
   const { normalized, analysis } = bumpDay();
-  // Needs 200 kWh to hold target; give it 100 kWh -> first 4 intervals covered,
-  // then dry. Charging can't help mid-bump (no headroom above-target rule).
+  // Needs 200 kWh to hold target 300; given only 100 kWh. A peak-aware
+  // controller spends the 100 kWh evenly across the 8-interval bump, holding a
+  // flat 350 kW (the achievable level) rather than fully covering the first 4
+  // intervals and leaving the peak at 400. Lower realized peak, same energy.
   const config = { kw: 300, kwh: 100, maxChargeKw: 300 };
   const r = simulateDispatch(normalized, analysis, config, 100, defaultDispatchParams());
   const m = r.monthly[0];
-  assert.ok(Math.abs(m.shavedPeakKw - 400) < 1e-6, 'dry battery -> peak unshaved');
-  assert.equal(m.missedIntervals, 4);
-  assert.ok(Math.abs(m.dischargeKwh - 100) < 1e-6);
+  assert.ok(Math.abs(m.shavedPeakKw - 350) < 1e-6, `peak held to 350, got ${m.shavedPeakKw}`);
+  assert.equal(m.missedIntervals, 8); // all 8 bump intervals still above the 300 target
+  assert.ok(Math.abs(m.dischargeKwh - 100) < 1e-6); // uses exactly its stored energy
+  assert.ok(Math.abs(m.worstShortfallKw - 50) < 1e-6); // 350 − 300
 });
 
 test('charging never creates a new peak above the target level', () => {

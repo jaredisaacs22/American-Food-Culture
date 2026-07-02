@@ -132,3 +132,15 @@ test('manual override produces a scored custom config', () => {
   assert.ok(c.captureRate > 0 && c.captureRate <= 1);
   assert.equal(c.perMonth.length, analysis.monthly.length);
 });
+
+test('manual override supports separate charge vs discharge kW', () => {
+  const { normalized, analysis } = loadYear();
+  const { shaveKw } = theoreticalRequirement(normalized, analysis, 100);
+  const c = manualConfig(normalized, analysis, shaveKw, 500, 2000, 250);
+  assert.equal(c.kw, 500);
+  assert.equal(c.maxChargeKw, 250);
+  assert.match(c.label, /charge 250 kW/);
+  // omitted charge kW defaults to the discharge rating
+  const d = manualConfig(normalized, analysis, shaveKw, 500, 2000);
+  assert.equal(d.maxChargeKw, 500);
+});

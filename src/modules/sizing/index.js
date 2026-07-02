@@ -177,15 +177,19 @@ function candidatesPanel(panel, site, normalized, analysis, req) {
   allToggle.checked = showAllCombos;
   allToggle.addEventListener('change', () => { showAllCombos = allToggle.checked; render(panel); });
 
-  // Manual override
+  // Manual override — charge kW may differ from discharge kW (e.g. units that
+  // discharge at 500 kW but accept only 250 kW of charge).
   const kwInp = el('input', { type: 'number', min: 1, value: site.sizing.manualOverride?.kw ?? Math.ceil(req.shaveKw) });
   const kwhInp = el('input', { type: 'number', min: 1, value: site.sizing.manualOverride?.kwh ?? Math.ceil(req.kwhNeed) });
+  const chgInp = el('input', { type: 'number', min: 0, value: site.sizing.manualOverride?.chargeKw ?? '', placeholder: 'same as kW' });
   const applyBtn = el('button', { class: 'action', onclick: () => {
     const kw = +kwInp.value;
     const kwh = +kwhInp.value;
+    const chargeKw = chgInp.value === '' ? null : +chgInp.value;
     if (!(kw > 0) || !(kwh > 0)) { alert('Enter positive kW and kWh.'); return; }
-    site.sizing.manualOverride = { kw, kwh };
-    site.sizing.selectedConfig = stripForStore(manualConfig(normalized, analysis, req.shaveKw, kw, kwh));
+    if (chargeKw !== null && !(chargeKw > 0)) { alert('Charge kW must be positive (or leave blank to match discharge).'); return; }
+    site.sizing.manualOverride = { kw, kwh, chargeKw };
+    site.sizing.selectedConfig = stripForStore(manualConfig(normalized, analysis, req.shaveKw, kw, kwh, chargeKw));
     notify({ sizing: true });
     render(panel);
   } }, 'Force this config');
@@ -199,8 +203,9 @@ function candidatesPanel(panel, site, normalized, analysis, req) {
     el('table', { class: 'data', style: 'max-width:980px' }, header, ...rows),
     el('h3', {}, 'Manual override'),
     el('div', {},
-      el('label', { class: 'field' }, 'kW:', kwInp),
-      el('label', { class: 'field' }, 'kWh:', kwhInp),
+      el('label', { class: 'field' }, 'Discharge kW:', kwInp),
+      el('label', { class: 'field' }, 'Capacity kWh:', kwhInp),
+      el('label', { class: 'field' }, 'Charge kW (if different):', chgInp),
       applyBtn,
       el('span', { class: 'muted', style: 'margin-left:8px' }, 'Forces an arbitrary rating regardless of fleet units.'),
     ),

@@ -184,13 +184,14 @@ export function generateCandidates(normalized, analysis, shaveKw, unitSpecs, opt
   return out;
 }
 
-/** Manual override config. */
-export function manualConfig(normalized, analysis, shaveKw, kw, kwh) {
+/** Manual override config. chargeKw lets charge rating differ from discharge. */
+export function manualConfig(normalized, analysis, shaveKw, kw, kwh, chargeKw = null) {
+  const maxChargeKw = chargeKw > 0 ? chargeKw : kw;
   const cfg = {
-    label: `Manual ${kw} kW / ${kwh} kWh`,
+    label: `Manual ${kw} kW / ${kwh} kWh` + (maxChargeKw !== kw ? ` (charge ${maxChargeKw} kW)` : ''),
     kw,
     kwh,
-    maxChargeKw: kw,
+    maxChargeKw,
     unitCount: null,
     units: [],
     simultaneousChargeDischarge: true,

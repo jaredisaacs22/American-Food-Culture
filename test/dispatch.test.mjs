@@ -179,3 +179,19 @@ test('realized tracks theoretical at a modest target, collapses at an aggressive
   assert.ok(fracAggro < fracModest, 'aggressive target cannot out-realize modest one');
   assert.ok(ra.annual.missedEvents > 0, 'aggressive target must produce missed events');
 });
+
+test('asymmetric config: charging never exceeds the charge rating', () => {
+  const { normalized, analysis } = loadYear();
+  const { shaveKw } = theoreticalRequirement(normalized, analysis, 50);
+  const config = { kw: 500, kwh: 1000, maxChargeKw: 100, simultaneousChargeDischarge: true };
+  const r = simulateDispatch(normalized, analysis, config, shaveKw, defaultDispatchParams());
+  for (const m of r.monthly) {
+    for (let h = 0; h < 24; h++) {
+      // per-hour charge energy can't exceed chargeKw × 1h × days-in-month;
+      // check the tighter per-interval bound via grid impact: served-load rise
+      // is capped by maxChargeKw, so hourly charge ≤ 100 kWh × days
+      assert.ok(m.chargeByHour[h] <= 100 * 31 + 1e-6, `${m.key} h${h}: ${m.chargeByHour[h]}`);
+    }
+  }
+  assert.ok(r.annual.chargeKwhGrid > 0, 'still charges, just slower');
+});

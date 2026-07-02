@@ -2794,6 +2794,9 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         summer,
         rawBilledKw: rawBilled[i],
         shavedBilledKw: shavedBilled[i],
+        // Worst-day-of-month billing: which day's 15-min max set each figure
+        rawPeakDate: m.rawPeakDate || null,
+        shavedPeakDate: m.shavedPeakDate || null,
         facilitiesSavings,
         rawOnPeakKw,
         shavedOnPeakKw,
@@ -2824,12 +2827,20 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
   function monthKeyOf(d) {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   }
+  function dateKeyOf(d) {
+    return `${monthKeyOf(d)}-${String(d.getDate()).padStart(2, "0")}`;
+  }
   function newMonthRecord(key, targetKw) {
     return {
       key,
       targetKw,
       rawPeakKw: 0,
       shavedPeakKw: 0,
+      // Worst-day-of-month billing: the dates whose 15-min max sets the billed
+      // demand — raw = the worst day from the analysis; shaved = whichever day
+      // becomes the new binding day after dispatch.
+      rawPeakDate: null,
+      shavedPeakDate: null,
       dischargeKwh: 0,
       chargeKwh: 0,
       // grid-side (includes round-trip losses)
@@ -2864,6 +2875,52 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     const shaved = new Float64Array(n);
     const socSeries = new Float64Array(n);
     const dayRanges = dayBoundaries(startMs, n);
+    const monthBillingLevel = /* @__PURE__ */ new Map();
+    const dayFloorFullArr = new Float64Array(dayRanges.length);
+    for (let di = 0; di < dayRanges.length; di++) {
+      const r = dayRanges[di];
+      const mk = monthKeyOf(new Date(startMs + r.start * STEP_MS3));
+      const target = targets.get(mk) ?? 0;
+      const dayFloorFull = Math.max(target, achievableLevel(kw.slice(r.start, r.end), config.kw, config.kwh));
+      dayFloorFullArr[di] = dayFloorFull;
+      const cur = monthBillingLevel.get(mk);
+      if (cur === void 0 || dayFloorFull > cur) monthBillingLevel.set(mk, dayFloorFull);
+    }
+    const refillPotentialAt = (k) => {
+      const kd = new Date(startMs + k * STEP_MS3);
+      const kMk = monthKeyOf(kd);
+      const kTarget = targets.get(kMk) ?? 0;
+      if (kw[k] >= kTarget - 1e-9 || !hourInWindows(kd.getHours(), windows)) return 0;
+      if (tariff) {
+        const kInfo = rateInfo(kMk);
+        const kRate = kInfo.rateByHour[kd.getHours()];
+        if (kRate >= kInfo.maxRate - 1e-9 && kInfo.maxRate > kInfo.minRate + 1e-12) return 0;
+      }
+      return Math.min(chargeCap, kTarget - kw[k]) * STEP_HOURS4 * eff;
+    };
+    const dayNeed = new Float64Array(dayRanges.length);
+    const dayRefillCycle = new Float64Array(dayRanges.length);
+    {
+      let prevBoundary = -1;
+      for (let di = 0; di < dayRanges.length; di++) {
+        const r = dayRanges[di];
+        const mk = monthKeyOf(new Date(startMs + r.start * STEP_MS3));
+        const held = Math.max(monthBillingLevel.get(mk) ?? 0, dayFloorFullArr[di]);
+        dayNeed[di] = energyAbove(kw.slice(r.start, r.end), held);
+        let lastDraw = -1;
+        for (let k = r.end - 1; k >= r.start; k--) {
+          if (kw[k] > held + 1e-9) {
+            lastDraw = k;
+            break;
+          }
+        }
+        const boundary = lastDraw >= 0 ? lastDraw : prevBoundary;
+        let refill = 0;
+        for (let k = prevBoundary + 1; k <= boundary; k++) refill += refillPotentialAt(k);
+        dayRefillCycle[di] = refill;
+        prevBoundary = boundary;
+      }
+    }
     let soc = config.kwh;
     let totalDischarge = 0;
     let totalChargeGrid = 0;
@@ -2872,6 +2929,9 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     let dischargeFloor = 0;
     let reserveAfter = null;
     let dayStartIdx = 0;
+    let dayEndIdx = 0;
+    let floorSocBasis = 0;
+    let maxCarryKwh = 0;
     const months = /* @__PURE__ */ new Map();
     let dayPtr = 0;
     for (let i = 0; i < n; i++) {
@@ -2888,12 +2948,20 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         const ds = dayRanges[dayPtr].start;
         const de = dayRanges[dayPtr].end;
         const day = kw.slice(ds, de);
-        dischargeFloor = Math.max(target, achievableLevel(day, config.kw, soc));
+        const billLevel = monthBillingLevel.get(mk) ?? target;
+        dischargeFloor = Math.max(billLevel, achievableLevel(day, config.kw, soc));
+        dayEndIdx = de;
+        floorSocBasis = soc;
         reserveAfter = new Float64Array(day.length + 1);
         for (let k = day.length - 1; k >= 0; k--) {
           reserveAfter[k] = reserveAfter[k + 1] + Math.max(0, day[k] - dischargeFloor) * STEP_HOURS4;
         }
         dayStartIdx = ds;
+        let required = 0;
+        for (let j = dayRanges.length - 1 - dayPtr; j >= 1; j--) {
+          required = Math.min(config.kwh, Math.max(0, required + dayNeed[dayPtr + j] - dayRefillCycle[dayPtr + j]));
+        }
+        maxCarryKwh = required;
         dayPtr++;
       }
       const load = kw[i];
@@ -2905,7 +2973,20 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       const isOffPeak = info ? rate <= info.minRate + 1e-9 : true;
       const isOnPeak = info ? rate >= info.maxRate - 1e-9 && hasSpread : false;
       const arbitrageWorthwhile = info ? info.maxRate * eff > info.minRate + 1e-9 : false;
-      const chargeGateOK = hourInWindows(h, windows) && (!tariff || isOffPeak);
+      const shortForPeaks = reserveAfter[i - dayStartIdx] + maxCarryKwh;
+      const chargeGateOK = hourInWindows(h, windows) && (!tariff || isOffPeak || !isOnPeak && soc < shortForPeaks - 1e-9);
+      const monthBill = monthBillingLevel.get(mk) ?? target;
+      if (dischargeFloor > monthBill + 1e-9 && soc > floorSocBasis + 1e-6 && ((i - dayStartIdx) % 4 === 0 || load > dischargeFloor + 1e-9)) {
+        const rest = kw.slice(i, dayEndIdx);
+        const newFloor = Math.max(monthBill, achievableLevel(rest, config.kw, soc));
+        if (newFloor < dischargeFloor - 1e-9) {
+          dischargeFloor = newFloor;
+          for (let k = dayEndIdx - 1; k >= i; k--) {
+            reserveAfter[k - dayStartIdx] = reserveAfter[k - dayStartIdx + 1] + Math.max(0, kw[k] - dischargeFloor) * STEP_HOURS4;
+          }
+        }
+        floorSocBasis = soc;
+      }
       if (load > dischargeFloor + 1e-9) {
         const want = load - dischargeFloor;
         const discharge = Math.min(want, config.kw, soc / STEP_HOURS4);
@@ -2914,8 +2995,9 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         totalDischarge += discharge * STEP_HOURS4;
         rec.dischargeKwh += discharge * STEP_HOURS4;
         rec.dischargeByHour[h] += discharge * STEP_HOURS4;
-      } else if (tariff && arbitrageOn && arbitrageWorthwhile && isOnPeak && load > 1e-9 && soc > reserveAfter[i - dayStartIdx + 1] + 1e-9) {
-        const surplus = soc - reserveAfter[i - dayStartIdx + 1];
+      } else if (tariff && arbitrageOn && arbitrageWorthwhile && isOnPeak && load > 1e-9) {
+        const reservedKwh = reserveAfter[i - dayStartIdx + 1] + maxCarryKwh + 0.02 * config.kwh;
+        const surplus = soc - reservedKwh;
         const arb = Math.max(0, Math.min(load, config.kw, surplus / STEP_HOURS4));
         if (arb > 1e-9) {
           soc -= arb * STEP_HOURS4;
@@ -2949,8 +3031,14 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       }
       shaved[i] = served;
       socSeries[i] = soc;
-      if (load > rec.rawPeakKw) rec.rawPeakKw = load;
-      if (served > rec.shavedPeakKw) rec.shavedPeakKw = served;
+      if (load > rec.rawPeakKw) {
+        rec.rawPeakKw = load;
+        rec.rawPeakDate = dateKeyOf(d);
+      }
+      if (served > rec.shavedPeakKw) {
+        rec.shavedPeakKw = served;
+        rec.shavedPeakDate = dateKeyOf(d);
+      }
       if (load > rec.rawPeakByHour[h]) rec.rawPeakByHour[h] = load;
       if (served > rec.shavedPeakByHour[h]) rec.shavedPeakByHour[h] = served;
     }
@@ -3137,12 +3225,13 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       el(
         "p",
         { class: "muted", style: "margin:8px 0 0" },
-        "Peak-aware dispatch: each day the battery reserves its stored energy for that day\u2019s peak, shaving down to ",
-        "the month\u2019s target level (max of the monthly average and peak \u2212 shave) where energy allows, and to the ",
-        "lowest flat level it can hold otherwise \u2014 it does not drain on the shoulders. It recharges when load is below ",
-        "the target (within any charge windows), capped so charging never creates a new peak. Round-trip losses are ",
-        "booked on the charging side; the battery starts the year full. Where overnight recharge can\u2019t fully refill, ",
-        "realized reduction falls below the sizing estimate \u2014 that gap is a real operational limit, shown per month below."
+        "Worst-day-of-month dispatch: demand charges bill each month\u2019s single worst 15-min interval, so the battery ",
+        "holds every day to the month\u2019s billing level \u2014 the lowest level it can hold the month\u2019s WORST day to (never ",
+        "deeper: shaving an ordinary day further can\u2019t lower the bill and wastes energy the worst day may need). ",
+        "Energy arbitrage only spends what upcoming worst days won\u2019t need, looking ahead across the full data, ",
+        "so it can never raise a billed peak. Charging happens off-peak below the target (never creating a new peak), ",
+        "losses are booked on the charging side, and the battery starts the year full. Where overnight recharge can\u2019t ",
+        "keep up, realized reduction falls below the sizing estimate \u2014 a real operational limit, shown per month below."
       ),
       ...flags.map((f) => el("div", { class: "warn", style: "margin-top:6px" }, `\u26A0 ${f}`))
     );
@@ -3165,8 +3254,9 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     const header = el(
       "tr",
       {},
-      ...["Month", "Raw peak kW", "Target kW", "Shaved peak kW", "Theoretical \u2212kW", "Realized \u2212kW", "Realized %", "Missed events", "Worst shortfall kW", "Discharge kWh", "Charge kWh (grid)"].map((h) => el("th", {}, h))
+      ...["Month", "Raw peak kW", "Target kW", "Shaved peak kW", "Worst day (raw \u2192 after BESS)", "Theoretical \u2212kW", "Realized \u2212kW", "Realized %", "Missed events", "Worst shortfall kW", "Discharge kWh", "Charge kWh (grid)"].map((h) => el("th", {}, h))
     );
+    const dayOf = (dk) => dk ? dk.slice(8) : "\u2014";
     const rows = r.monthly.map((m) => {
       const pct = m.theoreticalReductionKw > 0 ? m.realizedReductionKw / m.theoreticalReductionKw : 1;
       return el(
@@ -3176,6 +3266,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         el("td", {}, fmt.num(m.rawPeakKw, 0)),
         el("td", {}, fmt.num(m.targetKw, 0)),
         el("td", {}, fmt.num(m.shavedPeakKw, 0)),
+        el("td", {}, m.rawPeakDate ? `${dayOf(m.rawPeakDate)}${m.shavedPeakDate === m.rawPeakDate ? "" : ` \u2192 ${dayOf(m.shavedPeakDate)}`}` : "\u2014"),
         el("td", {}, fmt.num(m.theoreticalReductionKw, 1)),
         el("td", {}, fmt.num(m.realizedReductionKw, 1)),
         el("td", { class: pct < 0.95 ? "warn" : "ok" }, fmt.pct(pct)),
@@ -3192,6 +3283,8 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       el(
         "p",
         { class: "muted" },
+        "Worst-day-of-month billing: each month\u2019s demand charge is set by its single highest 15-min interval. ",
+        "Raw peak lands on the worst day from tab 1; \u201Cafter BESS\u201D shows which day sets the shaved bill (arrow = it moved). ",
         "Theoretical = raw peak \u2212 target level. Realized = raw peak \u2212 simulated (shaved) peak. ",
         "A missed-peak event is a contiguous run of intervals where the battery could not hold load to the target."
       ),
@@ -8750,7 +8843,8 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
   }
   function savingsPanel(tariff, results) {
     const s = computeTariffSavings(tariff, results.monthly);
-    const header = el("tr", {}, ...["Month", "Season", "Billed kW raw", "Billed kW shaved", "Facilities $", "On-peak kW raw\u2192shaved", "On-peak $", "TOU energy $", "Total $"].map((h) => el("th", {}, h)));
+    const header = el("tr", {}, ...["Month", "Season", "Billed kW raw", "Billed kW shaved", "Worst day (raw \u2192 after BESS)", "Facilities $", "On-peak kW raw\u2192shaved", "On-peak $", "TOU energy $", "Total $"].map((h) => el("th", {}, h)));
+    const dayOf = (dk) => dk ? dk.slice(8) : "\u2014";
     const rows = s.monthly.map((m) => el(
       "tr",
       {},
@@ -8758,6 +8852,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       el("td", {}, m.summer ? "summer" : "winter"),
       el("td", {}, fmt.num(m.rawBilledKw, 0)),
       el("td", {}, fmt.num(m.shavedBilledKw, 0)),
+      el("td", {}, m.rawPeakDate ? `${dayOf(m.rawPeakDate)}${m.shavedPeakDate === m.rawPeakDate ? "" : ` \u2192 ${dayOf(m.shavedPeakDate)}`}` : "\u2014"),
       el("td", {}, fmt.usd(m.facilitiesSavings)),
       el("td", {}, `${fmt.num(m.rawOnPeakKw, 0)} \u2192 ${fmt.num(m.shavedOnPeakKw, 0)}`),
       el("td", {}, fmt.usd(m.onPeakSavings)),
@@ -8781,6 +8876,9 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       el(
         "p",
         { class: "muted" },
+        "Demand charges follow worst-day-of-month billing: each month bills its single highest 15-min interval \u2014 ",
+        "raw = the worst day identified in tab 1; after BESS = whichever day becomes the new binding day ",
+        "(an arrow shows when it moves). ",
         "TOU energy = discharged kWh valued at the displaced hour\u2019s rate minus charging kWh at its hour\u2019s rate ",
         "(negative means round-trip losses cost more than the rate spread recovered)."
       )

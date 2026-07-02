@@ -20,7 +20,7 @@
 //   SAME definition as sizing (see monthTargetLevel), so dispatch results
 //   reconcile with the sizing capture estimate.
 
-import { monthTargetLevel, achievableLevel } from '../sizing/calc.js';
+import { monthTargetLevel, achievableLevel, energyAbove } from '../sizing/calc.js';
 import { monthEnergyRates } from '../tariffs/calc.js';
 
 const STEP_HOURS = 0.25;
@@ -44,12 +44,21 @@ function monthKeyOf(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+function dateKeyOf(d) {
+  return `${monthKeyOf(d)}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 function newMonthRecord(key, targetKw) {
   return {
     key,
     targetKw,
     rawPeakKw: 0,
     shavedPeakKw: 0,
+    // Worst-day-of-month billing: the dates whose 15-min max sets the billed
+    // demand — raw = the worst day from the analysis; shaved = whichever day
+    // becomes the new binding day after dispatch.
+    rawPeakDate: null,
+    shavedPeakDate: null,
     dischargeKwh: 0,
     chargeKwh: 0, // grid-side (includes round-trip losses)
     missedIntervals: 0,
@@ -101,6 +110,67 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
   // simulated reduction with the sizing capture estimate.
   const dayRanges = dayBoundaries(startMs, n);
 
+  // Worst-day-of-month billing level: demand charges bill on the single worst
+  // 15-min interval of the month, so the month's billed kW can never go below
+  // the level the battery can hold its HARDEST day to. Shaving any other day
+  // deeper than that level buys nothing and wastes energy the worst day may
+  // need. Per month, B = max over days of that day's full-battery floor; every
+  // day is dispatched to hold max(B, what today's SOC allows), never deeper.
+  const monthBillingLevel = new Map();
+  const dayFloorFullArr = new Float64Array(dayRanges.length);
+  for (let di = 0; di < dayRanges.length; di++) {
+    const r = dayRanges[di];
+    const mk = monthKeyOf(new Date(startMs + r.start * STEP_MS));
+    const target = targets.get(mk) ?? 0;
+    const dayFloorFull = Math.max(target, achievableLevel(kw.slice(r.start, r.end), config.kw, config.kwh));
+    dayFloorFullArr[di] = dayFloorFull;
+    const cur = monthBillingLevel.get(mk);
+    if (cur === undefined || dayFloorFull > cur) monthBillingLevel.set(mk, dayFloorFull);
+  }
+
+  /** Stored-kWh charging potential of one interval (matches the charge gate). */
+  const refillPotentialAt = (k) => {
+    const kd = new Date(startMs + k * STEP_MS);
+    const kMk = monthKeyOf(kd);
+    const kTarget = targets.get(kMk) ?? 0;
+    if (kw[k] >= kTarget - 1e-9 || !hourInWindows(kd.getHours(), windows)) return 0;
+    if (tariff) {
+      const kInfo = rateInfo(kMk);
+      const kRate = kInfo.rateByHour[kd.getHours()];
+      if (kRate >= kInfo.maxRate - 1e-9 && kInfo.maxRate > kInfo.minRate + 1e-12) return 0; // never buys on-peak
+    }
+    return Math.min(chargeCap, kTarget - kw[k]) * STEP_HOURS * eff;
+  };
+
+  // Per-day shave need and USABLE refill, for MULTI-DAY worst-day protection:
+  // in energy-limited months the battery may never return to full, so
+  // arbitrage tonight can starve the month's worst day even several days out.
+  // A day's usable refill is what arrives during its NEED CYCLE — from the
+  // previous day's last draw to its own last draw. Refill after a day's peak
+  // can't serve that day; it rolls into the next day's cycle.
+  const dayNeed = new Float64Array(dayRanges.length);
+  const dayRefillCycle = new Float64Array(dayRanges.length);
+  {
+    let prevBoundary = -1; // absolute index of the previous cycle's last draw
+    for (let di = 0; di < dayRanges.length; di++) {
+      const r = dayRanges[di];
+      const mk = monthKeyOf(new Date(startMs + r.start * STEP_MS));
+      // The level the dispatch actually holds this day to (the month's billing
+      // level — deeper shaving can't lower the bill).
+      const held = Math.max(monthBillingLevel.get(mk) ?? 0, dayFloorFullArr[di]);
+      dayNeed[di] = energyAbove(kw.slice(r.start, r.end), held);
+      let lastDraw = -1;
+      for (let k = r.end - 1; k >= r.start; k--) {
+        if (kw[k] > held + 1e-9) { lastDraw = k; break; }
+      }
+      const boundary = lastDraw >= 0 ? lastDraw : prevBoundary;
+      let refill = 0;
+      for (let k = prevBoundary + 1; k <= boundary; k++) refill += refillPotentialAt(k);
+      dayRefillCycle[di] = refill;
+      prevBoundary = boundary;
+    }
+  }
+
   let soc = config.kwh; // start full
   let totalDischarge = 0;
   let totalChargeGrid = 0;
@@ -109,6 +179,11 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
   let dischargeFloor = 0; // today's discharge threshold (>= month target)
   let reserveAfter = null; // suffix energy (kWh) still needed for today's peak
   let dayStartIdx = 0;
+  let dayEndIdx = 0;
+  let floorSocBasis = 0; // SOC the current floor was derived from
+  // Worst-day protection across days: demand charges bill on the month's worst
+  // day, so upcoming shaves must never be starved by tonight's arbitrage.
+  let maxCarryKwh = 0; // SOC required after today's last draw for the days ahead
 
   const months = new Map();
   let dayPtr = 0;
@@ -132,7 +207,13 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
       const ds = dayRanges[dayPtr].start;
       const de = dayRanges[dayPtr].end;
       const day = kw.slice(ds, de);
-      dischargeFloor = Math.max(target, achievableLevel(day, config.kw, soc));
+      // Hold today at the month's billing level (set by the month's worst
+      // day); deeper shaving can't lower the bill. If today's SOC can't even
+      // hold that, the higher achievable level is an honest shortfall.
+      const billLevel = monthBillingLevel.get(mk) ?? target;
+      dischargeFloor = Math.max(billLevel, achievableLevel(day, config.kw, soc));
+      dayEndIdx = de;
+      floorSocBasis = soc;
       // Suffix sum of peak-shaving energy still to be delivered from each
       // interval to day's end — energy the battery must NOT spend on arbitrage.
       reserveAfter = new Float64Array(day.length + 1);
@@ -140,6 +221,20 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
         reserveAfter[k] = reserveAfter[k + 1] + Math.max(0, day[k] - dischargeFloor) * STEP_HOURS;
       }
       dayStartIdx = ds;
+
+      // Multi-day worst-day protection: the SOC that must remain after today's
+      // last draw so every coming day's shave stays feasible. Backward
+      // feasibility recurrence over ALL remaining days (chronic-deficit months
+      // propagate a shortfall for weeks; any refill-rich recovery day resets
+      // the requirement to zero, so a long horizon never over-suppresses),
+      // clamped to [0, capacity]:
+      //   required_before_day_j = clamp(required_after + need_j − refill_j)
+      // where refill_j is the day's NEED-CYCLE refill (see above).
+      let required = 0;
+      for (let j = dayRanges.length - 1 - dayPtr; j >= 1; j--) {
+        required = Math.min(config.kwh, Math.max(0, required + dayNeed[dayPtr + j] - dayRefillCycle[dayPtr + j]));
+      }
+      maxCarryKwh = required;
       dayPtr++;
     }
 
@@ -156,7 +251,36 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
     // Arbitrage only pays if the on-peak value beats the cost of the off-peak
     // energy plus round-trip losses (maxRate·eff > minRate).
     const arbitrageWorthwhile = info ? info.maxRate * eff > info.minRate + 1e-9 : false;
-    const chargeGateOK = hourInWindows(h, windows) && (!tariff || isOffPeak);
+    // Demand charges bill on the month's WORST DAY, so being ready for the next
+    // peak outranks buying at the absolute cheapest tier: charging normally
+    // waits for off-peak (cheapest) hours, but escalates to any non-on-peak
+    // hour when SOC is short of today's remaining reserve plus what tomorrow's
+    // shave needs beyond the refill still available. It never buys on-peak.
+    const shortForPeaks = reserveAfter[i - dayStartIdx] + maxCarryKwh;
+    const chargeGateOK = hourInWindows(h, windows)
+      && (!tariff || isOffPeak || (!isOnPeak && soc < shortForPeaks - 1e-9));
+
+    // If energy has arrived since the day's floor was derived (overnight or
+    // morning recharge), re-derive it for the REMAINDER of the day — otherwise
+    // a low SOC at midnight pins the floor high all day even though the
+    // battery refills before the peak. Never below the month's billing level
+    // (deeper shaving can't lower the bill). Checked hourly, and always at the
+    // moment a draw is about to start so the floor reflects every kWh that
+    // made it in before the peak.
+    const monthBill = monthBillingLevel.get(mk) ?? target;
+    if (dischargeFloor > monthBill + 1e-9 && soc > floorSocBasis + 1e-6
+      && ((i - dayStartIdx) % 4 === 0 || load > dischargeFloor + 1e-9)) {
+      const rest = kw.slice(i, dayEndIdx);
+      const newFloor = Math.max(monthBill, achievableLevel(rest, config.kw, soc));
+      if (newFloor < dischargeFloor - 1e-9) {
+        dischargeFloor = newFloor;
+        for (let k = dayEndIdx - 1; k >= i; k--) {
+          reserveAfter[k - dayStartIdx] = reserveAfter[k - dayStartIdx + 1]
+            + Math.max(0, kw[k] - dischargeFloor) * STEP_HOURS;
+        }
+      }
+      floorSocBasis = soc;
+    }
 
     if (load > dischargeFloor + 1e-9) {
       // Discharge to hold today's threshold, limited by power and stored energy
@@ -167,12 +291,18 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
       totalDischarge += discharge * STEP_HOURS;
       rec.dischargeKwh += discharge * STEP_HOURS;
       rec.dischargeByHour[h] += discharge * STEP_HOURS;
-    } else if (tariff && arbitrageOn && arbitrageWorthwhile && isOnPeak && load > 1e-9
-      && soc > reserveAfter[i - dayStartIdx + 1] + 1e-9) {
-      // Energy arbitrage: spend energy NOT reserved for today's peak to serve
-      // load during the priciest hours (charged back off-peak). Never drops SOC
-      // below what the rest of today's peak still needs.
-      const surplus = soc - reserveAfter[i - dayStartIdx + 1];
+    } else if (tariff && arbitrageOn && arbitrageWorthwhile && isOnPeak && load > 1e-9) {
+      // Energy arbitrage: spend ONLY the energy that neither the rest of
+      // today's peak nor tomorrow's worst-day shave (net of the refill still
+      // possible before its first draw) will need. Worst-day demand savings
+      // always outrank the $/kWh spread.
+      // 2% of capacity is held back as a safety buffer: the day-level refill
+      // model is still approximate within a need cycle, and a few kWh of
+      // margin keeps arbitrage from ever nicking the billed worst-day peak.
+      const reservedKwh = reserveAfter[i - dayStartIdx + 1]
+        + maxCarryKwh
+        + 0.02 * config.kwh;
+      const surplus = soc - reservedKwh;
       const arb = Math.max(0, Math.min(load, config.kw, surplus / STEP_HOURS));
       if (arb > 1e-9) {
         soc -= arb * STEP_HOURS;
@@ -209,8 +339,8 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
 
     shaved[i] = served;
     socSeries[i] = soc;
-    if (load > rec.rawPeakKw) rec.rawPeakKw = load;
-    if (served > rec.shavedPeakKw) rec.shavedPeakKw = served;
+    if (load > rec.rawPeakKw) { rec.rawPeakKw = load; rec.rawPeakDate = dateKeyOf(d); }
+    if (served > rec.shavedPeakKw) { rec.shavedPeakKw = served; rec.shavedPeakDate = dateKeyOf(d); }
     if (load > rec.rawPeakByHour[h]) rec.rawPeakByHour[h] = load;
     if (served > rec.shavedPeakByHour[h]) rec.shavedPeakByHour[h] = served;
   }

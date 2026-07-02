@@ -160,6 +160,9 @@ export function computeTariffSavings(tariff, dispatchMonthly) {
       summer,
       rawBilledKw: rawBilled[i],
       shavedBilledKw: shavedBilled[i],
+      // Worst-day-of-month billing: which day's 15-min max set each figure
+      rawPeakDate: m.rawPeakDate || null,
+      shavedPeakDate: m.shavedPeakDate || null,
       facilitiesSavings,
       rawOnPeakKw,
       shavedOnPeakKw,

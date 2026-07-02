@@ -219,13 +219,17 @@ function editorPanel(panel, t) {
 
 function savingsPanel(tariff, results) {
   const s = computeTariffSavings(tariff, results.monthly);
-  const header = el('tr', {}, ...['Month', 'Season', 'Billed kW raw', 'Billed kW shaved', 'Facilities $', 'On-peak kW raw→shaved', 'On-peak $', 'TOU energy $', 'Total $']
+  const header = el('tr', {}, ...['Month', 'Season', 'Billed kW raw', 'Billed kW shaved', 'Worst day (raw → after BESS)', 'Facilities $', 'On-peak kW raw→shaved', 'On-peak $', 'TOU energy $', 'Total $']
     .map((h) => el('th', {}, h)));
+  const dayOf = (dk) => (dk ? dk.slice(8) : '—'); // day-of-month from YYYY-MM-DD
   const rows = s.monthly.map((m) => el('tr', {},
     el('td', {}, m.key),
     el('td', {}, m.summer ? 'summer' : 'winter'),
     el('td', {}, fmt.num(m.rawBilledKw, 0)),
     el('td', {}, fmt.num(m.shavedBilledKw, 0)),
+    el('td', {}, m.rawPeakDate
+      ? `${dayOf(m.rawPeakDate)}${m.shavedPeakDate === m.rawPeakDate ? '' : ` → ${dayOf(m.shavedPeakDate)}`}`
+      : '—'),
     el('td', {}, fmt.usd(m.facilitiesSavings)),
     el('td', {}, `${fmt.num(m.rawOnPeakKw, 0)} → ${fmt.num(m.shavedOnPeakKw, 0)}`),
     el('td', {}, fmt.usd(m.onPeakSavings)),
@@ -244,6 +248,9 @@ function savingsPanel(tariff, results) {
     ),
     el('table', { class: 'data' }, header, ...rows),
     el('p', { class: 'muted' },
+      'Demand charges follow worst-day-of-month billing: each month bills its single highest 15-min interval — ',
+      'raw = the worst day identified in tab 1; after BESS = whichever day becomes the new binding day ',
+      '(an arrow shows when it moves). ',
       'TOU energy = discharged kWh valued at the displaced hour’s rate minus charging kWh at its hour’s rate ',
       '(negative means round-trip losses cost more than the rate spread recovered).'),
   );

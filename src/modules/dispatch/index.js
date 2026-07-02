@@ -156,12 +156,13 @@ function paramsPanel(panel, site, config) {
     el('h3', {}, 'Charge windows (optional — further restricts charging hours; empty = any off-peak hour)'),
     windowsBox,
     el('p', { class: 'muted', style: 'margin:8px 0 0' },
-      'Peak-aware dispatch: each day the battery reserves its stored energy for that day’s peak, shaving down to ',
-      'the month’s target level (max of the monthly average and peak − shave) where energy allows, and to the ',
-      'lowest flat level it can hold otherwise — it does not drain on the shoulders. It recharges when load is below ',
-      'the target (within any charge windows), capped so charging never creates a new peak. Round-trip losses are ',
-      'booked on the charging side; the battery starts the year full. Where overnight recharge can’t fully refill, ',
-      'realized reduction falls below the sizing estimate — that gap is a real operational limit, shown per month below.'),
+      'Worst-day-of-month dispatch: demand charges bill each month’s single worst 15-min interval, so the battery ',
+      'holds every day to the month’s billing level — the lowest level it can hold the month’s WORST day to (never ',
+      'deeper: shaving an ordinary day further can’t lower the bill and wastes energy the worst day may need). ',
+      'Energy arbitrage only spends what upcoming worst days won’t need, looking ahead across the full data, ',
+      'so it can never raise a billed peak. Charging happens off-peak below the target (never creating a new peak), ',
+      'losses are booked on the charging side, and the battery starts the year full. Where overnight recharge can’t ',
+      'keep up, realized reduction falls below the sizing estimate — a real operational limit, shown per month below.'),
     ...flags.map((f) => el('div', { class: 'warn', style: 'margin-top:6px' }, `⚠ ${f}`)),
   );
 }
@@ -185,8 +186,9 @@ function statsStrip(r) {
 
 function monthlyPanel(r) {
   const header = el('tr', {},
-    ...['Month', 'Raw peak kW', 'Target kW', 'Shaved peak kW', 'Theoretical −kW', 'Realized −kW', 'Realized %', 'Missed events', 'Worst shortfall kW', 'Discharge kWh', 'Charge kWh (grid)']
+    ...['Month', 'Raw peak kW', 'Target kW', 'Shaved peak kW', 'Worst day (raw → after BESS)', 'Theoretical −kW', 'Realized −kW', 'Realized %', 'Missed events', 'Worst shortfall kW', 'Discharge kWh', 'Charge kWh (grid)']
       .map((h) => el('th', {}, h)));
+  const dayOf = (dk) => (dk ? dk.slice(8) : '—');
   const rows = r.monthly.map((m) => {
     const pct = m.theoreticalReductionKw > 0 ? m.realizedReductionKw / m.theoreticalReductionKw : 1;
     return el('tr', {},
@@ -194,6 +196,9 @@ function monthlyPanel(r) {
       el('td', {}, fmt.num(m.rawPeakKw, 0)),
       el('td', {}, fmt.num(m.targetKw, 0)),
       el('td', {}, fmt.num(m.shavedPeakKw, 0)),
+      el('td', {}, m.rawPeakDate
+        ? `${dayOf(m.rawPeakDate)}${m.shavedPeakDate === m.rawPeakDate ? '' : ` → ${dayOf(m.shavedPeakDate)}`}`
+        : '—'),
       el('td', {}, fmt.num(m.theoreticalReductionKw, 1)),
       el('td', {}, fmt.num(m.realizedReductionKw, 1)),
       el('td', { class: pct < 0.95 ? 'warn' : 'ok' }, fmt.pct(pct)),
@@ -206,6 +211,8 @@ function monthlyPanel(r) {
   return el('div', { class: 'panel' },
     el('h2', {}, 'Realized vs Theoretical Demand Reduction by Month'),
     el('p', { class: 'muted' },
+      'Worst-day-of-month billing: each month’s demand charge is set by its single highest 15-min interval. ',
+      'Raw peak lands on the worst day from tab 1; “after BESS” shows which day sets the shaved bill (arrow = it moved). ',
       'Theoretical = raw peak − target level. Realized = raw peak − simulated (shaved) peak. ',
       'A missed-peak event is a contiguous run of intervals where the battery could not hold load to the target.'),
     el('table', { class: 'data' }, header, ...rows),

@@ -793,8 +793,10 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       dispatch: {
         params: {
           roundTripEfficiency: 0.88,
-          chargeWindows: []
+          chargeWindows: [],
           // [{startHour, endHour}] — empty = charge any time load headroom allows
+          arbitrage: true
+          // charge off-peak / discharge on-peak for TOU energy arbitrage
         },
         results: null
       },
@@ -2681,6 +2683,137 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     );
   }
 
+  // src/modules/tariffs/calc.js
+  function seedTariffLibrary() {
+    return [
+      {
+        id: "sdge-al-tou",
+        utility: "SDG&E",
+        schedule: "AL-TOU (secondary)",
+        placeholder: true,
+        notes: "PLACEHOLDER values \u2014 replace with current filed AL-TOU rates.",
+        summerMonths: [6, 7, 8, 9, 10],
+        demand: { facilitiesKwMo: 24, onPeakSummerKwMo: 19, onPeakWinterKwMo: 8 },
+        windows: [
+          { name: "On-peak (4\u20139 pm)", startHour: 16, endHour: 21, summerRate: 0.32, winterRate: 0.26 }
+        ],
+        offPeak: { summerRate: 0.14, winterRate: 0.13 },
+        ratchet: { enabled: false, pct: 0.5 }
+      },
+      {
+        id: "sce-tou-8",
+        utility: "SCE",
+        schedule: "TOU-8 (B, 2\u201350 kV)",
+        placeholder: true,
+        notes: "PLACEHOLDER values \u2014 replace with current filed TOU-8 rates.",
+        summerMonths: [6, 7, 8, 9],
+        demand: { facilitiesKwMo: 22, onPeakSummerKwMo: 26, onPeakWinterKwMo: 0 },
+        windows: [
+          { name: "On-peak (4\u20139 pm)", startHour: 16, endHour: 21, summerRate: 0.3, winterRate: 0.24 },
+          { name: "Mid-peak (9 pm\u201312 am)", startHour: 21, endHour: 24, summerRate: 0.18, winterRate: 0.15 }
+        ],
+        offPeak: { summerRate: 0.12, winterRate: 0.11 },
+        ratchet: { enabled: false, pct: 0.5 }
+      },
+      {
+        id: "pseg-li-285",
+        utility: "PSEG Long Island",
+        schedule: "SC-285 (large GS)",
+        placeholder: true,
+        notes: "PLACEHOLDER values \u2014 replace with current filed 285 rates. Ratchet enabled as typical for this schedule.",
+        summerMonths: [6, 7, 8, 9],
+        demand: { facilitiesKwMo: 18, onPeakSummerKwMo: 12, onPeakWinterKwMo: 5 },
+        windows: [
+          { name: "On-peak (12\u20138 pm wkdy)", startHour: 12, endHour: 20, summerRate: 0.16, winterRate: 0.13 }
+        ],
+        offPeak: { summerRate: 0.09, winterRate: 0.08 },
+        ratchet: { enabled: true, pct: 0.5 }
+      }
+    ];
+  }
+  function isSummer(tariff, monthKey2) {
+    const m = +monthKey2.slice(5, 7);
+    return tariff.summerMonths.includes(m);
+  }
+  function energyRate(tariff, monthKey2, hour) {
+    const summer = isSummer(tariff, monthKey2);
+    for (const w of tariff.windows) {
+      const inWin = w.startHour <= w.endHour ? hour >= w.startHour && hour < w.endHour : hour >= w.startHour || hour < w.endHour;
+      if (inWin) return summer ? w.summerRate : w.winterRate;
+    }
+    return summer ? tariff.offPeak.summerRate : tariff.offPeak.winterRate;
+  }
+  function onPeakDemand(tariff, peakByHour) {
+    const w = tariff.windows[0];
+    if (!w) return 0;
+    let max = 0;
+    for (let h = 0; h < 24; h++) {
+      const inWin = w.startHour <= w.endHour ? h >= w.startHour && h < w.endHour : h >= w.startHour || h < w.endHour;
+      if (inWin && peakByHour[h] > max) max = peakByHour[h];
+    }
+    return max;
+  }
+  function monthEnergyRates(tariff, monthKey2) {
+    const rateByHour = new Array(24);
+    let minRate = Infinity;
+    let maxRate = -Infinity;
+    for (let h = 0; h < 24; h++) {
+      const r = energyRate(tariff, monthKey2, h);
+      rateByHour[h] = r;
+      if (r < minRate) minRate = r;
+      if (r > maxRate) maxRate = r;
+    }
+    return { rateByHour, minRate, maxRate };
+  }
+  function applyRatchet(peaks, ratchet) {
+    if (!ratchet?.enabled) return peaks.slice();
+    return peaks.map((p, i) => {
+      let prior = 0;
+      for (let j = Math.max(0, i - 11); j < i; j++) prior = Math.max(prior, peaks[j]);
+      return Math.max(p, ratchet.pct * prior);
+    });
+  }
+  function computeTariffSavings(tariff, dispatchMonthly) {
+    const rawBilled = applyRatchet(dispatchMonthly.map((m) => m.rawPeakKw), tariff.ratchet);
+    const shavedBilled = applyRatchet(dispatchMonthly.map((m) => m.shavedPeakKw), tariff.ratchet);
+    const monthly = dispatchMonthly.map((m, i) => {
+      const summer = isSummer(tariff, m.key);
+      const onPeakRate = summer ? tariff.demand.onPeakSummerKwMo : tariff.demand.onPeakWinterKwMo;
+      const facilitiesSavings = (rawBilled[i] - shavedBilled[i]) * tariff.demand.facilitiesKwMo;
+      const rawOnPeakKw = onPeakDemand(tariff, m.rawPeakByHour);
+      const shavedOnPeakKw = onPeakDemand(tariff, m.shavedPeakByHour);
+      const onPeakSavings = (rawOnPeakKw - shavedOnPeakKw) * onPeakRate;
+      let energySavings = 0;
+      for (let h = 0; h < 24; h++) {
+        const rate = energyRate(tariff, m.key, h);
+        energySavings += (m.dischargeByHour[h] || 0) * rate;
+        energySavings -= (m.chargeByHour[h] || 0) * rate;
+      }
+      return {
+        key: m.key,
+        summer,
+        rawBilledKw: rawBilled[i],
+        shavedBilledKw: shavedBilled[i],
+        facilitiesSavings,
+        rawOnPeakKw,
+        shavedOnPeakKw,
+        onPeakSavings,
+        demandSavings: facilitiesSavings + onPeakSavings,
+        energySavings,
+        // TOU arbitrage net of charging cost (can be negative)
+        totalSavings: facilitiesSavings + onPeakSavings + energySavings
+      };
+    });
+    return {
+      monthly,
+      annual: {
+        demandSavings: monthly.reduce((s, m) => s + m.demandSavings, 0),
+        energySavings: monthly.reduce((s, m) => s + m.energySavings, 0),
+        totalSavings: monthly.reduce((s, m) => s + m.totalSavings, 0)
+      }
+    };
+  }
+
   // src/modules/dispatch/calc.js
   var STEP_HOURS4 = 0.25;
   var STEP_MS3 = 15 * 6e4;
@@ -2714,6 +2847,17 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     if (!(eff > 0 && eff <= 1)) throw new Error(`round-trip efficiency out of range: ${eff}`);
     const chargeCap = Math.min(params.maxChargeKw || Infinity, config.maxChargeKw || config.kw);
     const windows = params.chargeWindows || [];
+    const tariff = params.tariff || null;
+    const arbitrageOn = tariff ? params.arbitrage !== false : false;
+    const rateCache = /* @__PURE__ */ new Map();
+    const rateInfo = (mk) => {
+      let r = rateCache.get(mk);
+      if (!r) {
+        r = monthEnergyRates(tariff, mk);
+        rateCache.set(mk, r);
+      }
+      return r;
+    };
     const targets = new Map(analysis.monthly.map((m) => [m.key, monthTargetLevel(m, shaveKw)]));
     const { startMs, kw } = normalized;
     const n = kw.length;
@@ -2723,8 +2867,11 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     let soc = config.kwh;
     let totalDischarge = 0;
     let totalChargeGrid = 0;
+    let totalArbitrageKwh = 0;
     let inMissRun = false;
     let dischargeFloor = 0;
+    let reserveAfter = null;
+    let dayStartIdx = 0;
     const months = /* @__PURE__ */ new Map();
     let dayPtr = 0;
     for (let i = 0; i < n; i++) {
@@ -2738,13 +2885,27 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       }
       const target = rec.targetKw;
       if (dayPtr < dayRanges.length && i === dayRanges[dayPtr].start) {
-        const day = kw.slice(dayRanges[dayPtr].start, dayRanges[dayPtr].end);
+        const ds = dayRanges[dayPtr].start;
+        const de = dayRanges[dayPtr].end;
+        const day = kw.slice(ds, de);
         dischargeFloor = Math.max(target, achievableLevel(day, config.kw, soc));
+        reserveAfter = new Float64Array(day.length + 1);
+        for (let k = day.length - 1; k >= 0; k--) {
+          reserveAfter[k] = reserveAfter[k + 1] + Math.max(0, day[k] - dischargeFloor) * STEP_HOURS4;
+        }
+        dayStartIdx = ds;
         dayPtr++;
       }
       const load = kw[i];
       const h = d.getHours();
       let served = load;
+      const info = tariff ? rateInfo(mk) : null;
+      const rate = info ? info.rateByHour[h] : 0;
+      const hasSpread = info ? info.maxRate > info.minRate + 1e-12 : false;
+      const isOffPeak = info ? rate <= info.minRate + 1e-9 : true;
+      const isOnPeak = info ? rate >= info.maxRate - 1e-9 && hasSpread : false;
+      const arbitrageWorthwhile = info ? info.maxRate * eff > info.minRate + 1e-9 : false;
+      const chargeGateOK = hourInWindows(h, windows) && (!tariff || isOffPeak);
       if (load > dischargeFloor + 1e-9) {
         const want = load - dischargeFloor;
         const discharge = Math.min(want, config.kw, soc / STEP_HOURS4);
@@ -2753,7 +2914,18 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         totalDischarge += discharge * STEP_HOURS4;
         rec.dischargeKwh += discharge * STEP_HOURS4;
         rec.dischargeByHour[h] += discharge * STEP_HOURS4;
-      } else if (load < target - 1e-9 && soc < config.kwh - 1e-9 && hourInWindows(h, windows)) {
+      } else if (tariff && arbitrageOn && arbitrageWorthwhile && isOnPeak && load > 1e-9 && soc > reserveAfter[i - dayStartIdx + 1] + 1e-9) {
+        const surplus = soc - reserveAfter[i - dayStartIdx + 1];
+        const arb = Math.max(0, Math.min(load, config.kw, surplus / STEP_HOURS4));
+        if (arb > 1e-9) {
+          soc -= arb * STEP_HOURS4;
+          served = load - arb;
+          totalDischarge += arb * STEP_HOURS4;
+          totalArbitrageKwh += arb * STEP_HOURS4;
+          rec.dischargeKwh += arb * STEP_HOURS4;
+          rec.dischargeByHour[h] += arb * STEP_HOURS4;
+        }
+      } else if (load < target - 1e-9 && soc < config.kwh - 1e-9 && chargeGateOK) {
         const headroom = target - load;
         const roomKw = (config.kwh - soc) / (STEP_HOURS4 * eff);
         const charge = Math.max(0, Math.min(chargeCap, headroom, roomKw));
@@ -2790,6 +2962,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     const lossesKwh = totalChargeGrid * (1 - eff);
     const annual = {
       dischargeKwh: totalDischarge,
+      arbitrageKwh: totalArbitrageKwh,
       chargeKwhGrid: totalChargeGrid,
       lossesKwh,
       cycles: config.kwh > 0 ? totalDischarge / config.kwh : 0,
@@ -2821,6 +2994,10 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
   }
 
   // src/modules/dispatch/index.js
+  function selectedTariff(site) {
+    const lib = getTariffLibrary();
+    return lib.find((t) => t.id === site.tariff.selectedId) || lib[0] || null;
+  }
   var chart2 = null;
   var lastSeries = null;
   var dispatch_default = {
@@ -2831,6 +3008,10 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       subscribe((change) => {
         if (change.workspaceLoaded || change.intervals || change.sizing || change.unitSpecs) {
           lastSeries = null;
+          render3(panel);
+        } else if (change.tariff && getSite().dispatch.results) {
+          lastSeries = null;
+          runSim(getSite());
           render3(panel);
         }
       });
@@ -2863,13 +3044,17 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     const { normalized, analysis } = site.intervals;
     const config = site.sizing.selectedConfig;
     const { shaveKw } = theoreticalRequirement(normalized, analysis, site.sizing.targetShavePct);
-    const out = simulateDispatch(normalized, analysis, config, shaveKw, site.dispatch.params);
+    const tariff = selectedTariff(site);
+    const simParams = { ...site.dispatch.params, tariff };
+    const out = simulateDispatch(normalized, analysis, config, shaveKw, simParams);
     lastSeries = out.series;
     site.dispatch.results = {
       monthly: out.monthly,
       annual: out.annual,
       configLabel: config.label,
       shaveKw,
+      tariffId: tariff ? tariff.id : null,
+      tariffLabel: tariff ? `${tariff.utility} ${tariff.schedule}` : null,
       params: JSON.parse(JSON.stringify(site.dispatch.params)),
       ranAt: (/* @__PURE__ */ new Date()).toISOString()
     };
@@ -2883,6 +3068,9 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     const p = site.dispatch.params;
     const rteInp = el("input", { type: "number", min: 50, max: 100, step: 0.5, value: Math.round(p.roundTripEfficiency * 1e3) / 10 });
     const chgInp = el("input", { type: "number", min: 1, value: p.maxChargeKw ?? (config.maxChargeKw || config.kw) });
+    const arbChk = el("input", { type: "checkbox" });
+    arbChk.checked = p.arbitrage !== false;
+    const tariff = selectedTariff(site);
     const windowsBox = el("div", {});
     const drawWindows = () => {
       clear(windowsBox);
@@ -2919,6 +3107,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       }
       p.roundTripEfficiency = rte;
       p.maxChargeKw = +chgInp.value || null;
+      p.arbitrage = arbChk.checked;
       runSim(site);
       render3(panel);
     } }, site.dispatch.results ? "Re-run simulation" : "Run simulation");
@@ -2935,9 +3124,15 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         {},
         el("label", { class: "field" }, "Round-trip efficiency %:", rteInp),
         el("label", { class: "field" }, "Max charge kW:", chgInp),
+        el("label", { class: "field" }, "Energy arbitrage (charge off-peak / discharge on-peak):", arbChk),
         runBtn
       ),
-      el("h3", {}, "Charge windows (empty = charge any time below target)"),
+      el(
+        "p",
+        { class: "muted", style: "margin:0 0 8px" },
+        tariff ? `TOU rates from ${tariff.utility} ${tariff.schedule} (tab 4). The battery charges only off-peak and, with arbitrage on, discharges spare energy during on-peak hours to capture the $/kWh spread.` : "No tariff selected (tab 4) \u2014 charging is price-blind. Select a tariff to enable TOU-aware charging and energy arbitrage."
+      ),
+      el("h3", {}, "Charge windows (optional \u2014 further restricts charging hours; empty = any off-peak hour)"),
       windowsBox,
       el(
         "p",
@@ -2958,7 +3153,8 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       "div",
       { class: "stats", style: "margin-bottom:12px" },
       stat(fmt.num(r.annual.cycles, 1), "Annual cycles"),
-      stat(fmt.num(r.annual.dischargeKwh, 0) + " kWh", "Discharged"),
+      stat(fmt.num(r.annual.dischargeKwh, 0) + " kWh", "Discharged (total)"),
+      stat(fmt.num(r.annual.arbitrageKwh || 0, 0) + " kWh", "of which arbitrage"),
       stat(fmt.num(r.annual.lossesKwh, 0) + " kWh", "Round-trip losses"),
       stat(String(r.annual.missedEvents), "Missed-peak events", r.annual.missedEvents ? "warn" : "ok"),
       stat(fmt.kw(r.annual.avgRealizedReductionKw), "Avg realized reduction"),
@@ -3065,125 +3261,6 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       el("label", { class: "field" }, "Day:", sel),
       el("div", { class: "chart-box tall" }, canvas)
     );
-  }
-
-  // src/modules/tariffs/calc.js
-  function seedTariffLibrary() {
-    return [
-      {
-        id: "sdge-al-tou",
-        utility: "SDG&E",
-        schedule: "AL-TOU (secondary)",
-        placeholder: true,
-        notes: "PLACEHOLDER values \u2014 replace with current filed AL-TOU rates.",
-        summerMonths: [6, 7, 8, 9, 10],
-        demand: { facilitiesKwMo: 24, onPeakSummerKwMo: 19, onPeakWinterKwMo: 8 },
-        windows: [
-          { name: "On-peak (4\u20139 pm)", startHour: 16, endHour: 21, summerRate: 0.32, winterRate: 0.26 }
-        ],
-        offPeak: { summerRate: 0.14, winterRate: 0.13 },
-        ratchet: { enabled: false, pct: 0.5 }
-      },
-      {
-        id: "sce-tou-8",
-        utility: "SCE",
-        schedule: "TOU-8 (B, 2\u201350 kV)",
-        placeholder: true,
-        notes: "PLACEHOLDER values \u2014 replace with current filed TOU-8 rates.",
-        summerMonths: [6, 7, 8, 9],
-        demand: { facilitiesKwMo: 22, onPeakSummerKwMo: 26, onPeakWinterKwMo: 0 },
-        windows: [
-          { name: "On-peak (4\u20139 pm)", startHour: 16, endHour: 21, summerRate: 0.3, winterRate: 0.24 },
-          { name: "Mid-peak (9 pm\u201312 am)", startHour: 21, endHour: 24, summerRate: 0.18, winterRate: 0.15 }
-        ],
-        offPeak: { summerRate: 0.12, winterRate: 0.11 },
-        ratchet: { enabled: false, pct: 0.5 }
-      },
-      {
-        id: "pseg-li-285",
-        utility: "PSEG Long Island",
-        schedule: "SC-285 (large GS)",
-        placeholder: true,
-        notes: "PLACEHOLDER values \u2014 replace with current filed 285 rates. Ratchet enabled as typical for this schedule.",
-        summerMonths: [6, 7, 8, 9],
-        demand: { facilitiesKwMo: 18, onPeakSummerKwMo: 12, onPeakWinterKwMo: 5 },
-        windows: [
-          { name: "On-peak (12\u20138 pm wkdy)", startHour: 12, endHour: 20, summerRate: 0.16, winterRate: 0.13 }
-        ],
-        offPeak: { summerRate: 0.09, winterRate: 0.08 },
-        ratchet: { enabled: true, pct: 0.5 }
-      }
-    ];
-  }
-  function isSummer(tariff, monthKey2) {
-    const m = +monthKey2.slice(5, 7);
-    return tariff.summerMonths.includes(m);
-  }
-  function energyRate(tariff, monthKey2, hour) {
-    const summer = isSummer(tariff, monthKey2);
-    for (const w of tariff.windows) {
-      const inWin = w.startHour <= w.endHour ? hour >= w.startHour && hour < w.endHour : hour >= w.startHour || hour < w.endHour;
-      if (inWin) return summer ? w.summerRate : w.winterRate;
-    }
-    return summer ? tariff.offPeak.summerRate : tariff.offPeak.winterRate;
-  }
-  function onPeakDemand(tariff, peakByHour) {
-    const w = tariff.windows[0];
-    if (!w) return 0;
-    let max = 0;
-    for (let h = 0; h < 24; h++) {
-      const inWin = w.startHour <= w.endHour ? h >= w.startHour && h < w.endHour : h >= w.startHour || h < w.endHour;
-      if (inWin && peakByHour[h] > max) max = peakByHour[h];
-    }
-    return max;
-  }
-  function applyRatchet(peaks, ratchet) {
-    if (!ratchet?.enabled) return peaks.slice();
-    return peaks.map((p, i) => {
-      let prior = 0;
-      for (let j = Math.max(0, i - 11); j < i; j++) prior = Math.max(prior, peaks[j]);
-      return Math.max(p, ratchet.pct * prior);
-    });
-  }
-  function computeTariffSavings(tariff, dispatchMonthly) {
-    const rawBilled = applyRatchet(dispatchMonthly.map((m) => m.rawPeakKw), tariff.ratchet);
-    const shavedBilled = applyRatchet(dispatchMonthly.map((m) => m.shavedPeakKw), tariff.ratchet);
-    const monthly = dispatchMonthly.map((m, i) => {
-      const summer = isSummer(tariff, m.key);
-      const onPeakRate = summer ? tariff.demand.onPeakSummerKwMo : tariff.demand.onPeakWinterKwMo;
-      const facilitiesSavings = (rawBilled[i] - shavedBilled[i]) * tariff.demand.facilitiesKwMo;
-      const rawOnPeakKw = onPeakDemand(tariff, m.rawPeakByHour);
-      const shavedOnPeakKw = onPeakDemand(tariff, m.shavedPeakByHour);
-      const onPeakSavings = (rawOnPeakKw - shavedOnPeakKw) * onPeakRate;
-      let energySavings = 0;
-      for (let h = 0; h < 24; h++) {
-        const rate = energyRate(tariff, m.key, h);
-        energySavings += (m.dischargeByHour[h] || 0) * rate;
-        energySavings -= (m.chargeByHour[h] || 0) * rate;
-      }
-      return {
-        key: m.key,
-        summer,
-        rawBilledKw: rawBilled[i],
-        shavedBilledKw: shavedBilled[i],
-        facilitiesSavings,
-        rawOnPeakKw,
-        shavedOnPeakKw,
-        onPeakSavings,
-        demandSavings: facilitiesSavings + onPeakSavings,
-        energySavings,
-        // TOU arbitrage net of charging cost (can be negative)
-        totalSavings: facilitiesSavings + onPeakSavings + energySavings
-      };
-    });
-    return {
-      monthly,
-      annual: {
-        demandSavings: monthly.reduce((s, m) => s + m.demandSavings, 0),
-        energySavings: monthly.reduce((s, m) => s + m.energySavings, 0),
-        totalSavings: monthly.reduce((s, m) => s + m.totalSavings, 0)
-      }
-    };
   }
 
   // src/data/usurdb-tariffs.json

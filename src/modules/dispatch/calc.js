@@ -21,6 +21,7 @@
 //   reconcile with the sizing capture estimate.
 
 import { monthTargetLevel, achievableLevel } from '../sizing/calc.js';
+import { monthEnergyRates } from '../tariffs/calc.js';
 
 const STEP_HOURS = 0.25;
 const STEP_MS = 15 * 60000;
@@ -72,6 +73,20 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
   const chargeCap = Math.min(params.maxChargeKw || Infinity, config.maxChargeKw || config.kw);
   const windows = params.chargeWindows || [];
 
+  // TOU-awareness: when a tariff is supplied the battery charges only during
+  // the cheapest (off-peak) hours and — if the price spread beats round-trip
+  // losses — discharges spare energy during the priciest (on-peak) hours to
+  // capture energy arbitrage, on top of peak shaving. Without a tariff it falls
+  // back to price-blind charging (any hour below target, within charge windows).
+  const tariff = params.tariff || null;
+  const arbitrageOn = tariff ? params.arbitrage !== false : false;
+  const rateCache = new Map();
+  const rateInfo = (mk) => {
+    let r = rateCache.get(mk);
+    if (!r) { r = monthEnergyRates(tariff, mk); rateCache.set(mk, r); }
+    return r;
+  };
+
   const targets = new Map(analysis.monthly.map((m) => [m.key, monthTargetLevel(m, shaveKw)]));
 
   const { startMs, kw } = normalized;
@@ -89,8 +104,11 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
   let soc = config.kwh; // start full
   let totalDischarge = 0;
   let totalChargeGrid = 0;
+  let totalArbitrageKwh = 0; // discharge dedicated to arbitrage (not peak shaving)
   let inMissRun = false;
   let dischargeFloor = 0; // today's discharge threshold (>= month target)
+  let reserveAfter = null; // suffix energy (kWh) still needed for today's peak
+  let dayStartIdx = 0;
 
   const months = new Map();
   let dayPtr = 0;
@@ -111,14 +129,34 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
     // SOC can hold, but never below the month target. Loads above the month
     // target but below this floor (when energy-limited) are honest misses.
     if (dayPtr < dayRanges.length && i === dayRanges[dayPtr].start) {
-      const day = kw.slice(dayRanges[dayPtr].start, dayRanges[dayPtr].end);
+      const ds = dayRanges[dayPtr].start;
+      const de = dayRanges[dayPtr].end;
+      const day = kw.slice(ds, de);
       dischargeFloor = Math.max(target, achievableLevel(day, config.kw, soc));
+      // Suffix sum of peak-shaving energy still to be delivered from each
+      // interval to day's end — energy the battery must NOT spend on arbitrage.
+      reserveAfter = new Float64Array(day.length + 1);
+      for (let k = day.length - 1; k >= 0; k--) {
+        reserveAfter[k] = reserveAfter[k + 1] + Math.max(0, day[k] - dischargeFloor) * STEP_HOURS;
+      }
+      dayStartIdx = ds;
       dayPtr++;
     }
 
     const load = kw[i];
     const h = d.getHours();
     let served = load;
+
+    // Price tier for this hour (only when a tariff is supplied)
+    const info = tariff ? rateInfo(mk) : null;
+    const rate = info ? info.rateByHour[h] : 0;
+    const hasSpread = info ? info.maxRate > info.minRate + 1e-12 : false;
+    const isOffPeak = info ? rate <= info.minRate + 1e-9 : true;
+    const isOnPeak = info ? rate >= info.maxRate - 1e-9 && hasSpread : false;
+    // Arbitrage only pays if the on-peak value beats the cost of the off-peak
+    // energy plus round-trip losses (maxRate·eff > minRate).
+    const arbitrageWorthwhile = info ? info.maxRate * eff > info.minRate + 1e-9 : false;
+    const chargeGateOK = hourInWindows(h, windows) && (!tariff || isOffPeak);
 
     if (load > dischargeFloor + 1e-9) {
       // Discharge to hold today's threshold, limited by power and stored energy
@@ -129,8 +167,24 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
       totalDischarge += discharge * STEP_HOURS;
       rec.dischargeKwh += discharge * STEP_HOURS;
       rec.dischargeByHour[h] += discharge * STEP_HOURS;
-    } else if (load < target - 1e-9 && soc < config.kwh - 1e-9 && hourInWindows(h, windows)) {
-      // Charge when load is below the month target (never create a new peak)
+    } else if (tariff && arbitrageOn && arbitrageWorthwhile && isOnPeak && load > 1e-9
+      && soc > reserveAfter[i - dayStartIdx + 1] + 1e-9) {
+      // Energy arbitrage: spend energy NOT reserved for today's peak to serve
+      // load during the priciest hours (charged back off-peak). Never drops SOC
+      // below what the rest of today's peak still needs.
+      const surplus = soc - reserveAfter[i - dayStartIdx + 1];
+      const arb = Math.max(0, Math.min(load, config.kw, surplus / STEP_HOURS));
+      if (arb > 1e-9) {
+        soc -= arb * STEP_HOURS;
+        served = load - arb;
+        totalDischarge += arb * STEP_HOURS;
+        totalArbitrageKwh += arb * STEP_HOURS;
+        rec.dischargeKwh += arb * STEP_HOURS;
+        rec.dischargeByHour[h] += arb * STEP_HOURS;
+      }
+    } else if (load < target - 1e-9 && soc < config.kwh - 1e-9 && chargeGateOK) {
+      // Charge when load is below the month target (never create a new peak);
+      // with a tariff this only fires off-peak (cheapest energy).
       const headroom = target - load;
       const roomKw = (config.kwh - soc) / (STEP_HOURS * eff);
       const charge = Math.max(0, Math.min(chargeCap, headroom, roomKw));
@@ -170,6 +224,7 @@ export function simulateDispatch(normalized, analysis, config, shaveKw, params) 
   const lossesKwh = totalChargeGrid * (1 - eff);
   const annual = {
     dischargeKwh: totalDischarge,
+    arbitrageKwh: totalArbitrageKwh,
     chargeKwhGrid: totalChargeGrid,
     lossesKwh,
     cycles: config.kwh > 0 ? totalDischarge / config.kwh : 0,

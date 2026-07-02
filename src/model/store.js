@@ -34,6 +34,7 @@ export function createEmptySite() {
       params: {
         roundTripEfficiency: 0.88,
         chargeWindows: [], // [{startHour, endHour}] — empty = charge any time load headroom allows
+        arbitrage: true, // charge off-peak / discharge on-peak for TOU energy arbitrage
       },
       results: null,
     },

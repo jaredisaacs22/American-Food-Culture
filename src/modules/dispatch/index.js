@@ -5,9 +5,15 @@
 /* global Chart */
 
 import { el, clear, fmt } from '../../ui/dom.js';
-import { getSite, notify, subscribe } from '../../model/store.js';
+import { getSite, getTariffLibrary, notify, subscribe } from '../../model/store.js';
 import { theoreticalRequirement } from '../sizing/calc.js';
 import { simulateDispatch } from './calc.js';
+
+/** The tariff the dispatch should optimize energy arbitrage against (or null). */
+function selectedTariff(site) {
+  const lib = getTariffLibrary();
+  return lib.find((t) => t.id === site.tariff.selectedId) || lib[0] || null;
+}
 
 let chart = null;
 let lastSeries = null; // Float64Arrays kept module-local (too big for workspace JSON)
@@ -18,8 +24,14 @@ export default {
   mount(panel) {
     render(panel);
     subscribe((change) => {
+      // Tariff changes affect the TOU-aware charge/discharge schedule, so a
+      // tariff edit re-runs the simulation (not just the downstream $ valuation).
       if (change.workspaceLoaded || change.intervals || change.sizing || change.unitSpecs) {
         lastSeries = null;
+        render(panel);
+      } else if (change.tariff && getSite().dispatch.results) {
+        lastSeries = null;
+        runSim(getSite());
         render(panel);
       }
     });
@@ -57,13 +69,19 @@ function runSim(site) {
   const { normalized, analysis } = site.intervals;
   const config = site.sizing.selectedConfig;
   const { shaveKw } = theoreticalRequirement(normalized, analysis, site.sizing.targetShavePct);
-  const out = simulateDispatch(normalized, analysis, config, shaveKw, site.dispatch.params);
+  const tariff = selectedTariff(site);
+  // Pass the tariff (and arbitrage flag) into the sim without persisting the
+  // tariff object onto the results.
+  const simParams = { ...site.dispatch.params, tariff };
+  const out = simulateDispatch(normalized, analysis, config, shaveKw, simParams);
   lastSeries = out.series;
   site.dispatch.results = {
     monthly: out.monthly,
     annual: out.annual,
     configLabel: config.label,
     shaveKw,
+    tariffId: tariff ? tariff.id : null,
+    tariffLabel: tariff ? `${tariff.utility} ${tariff.schedule}` : null,
     params: JSON.parse(JSON.stringify(site.dispatch.params)),
     ranAt: new Date().toISOString(),
   };
@@ -84,6 +102,9 @@ function paramsPanel(panel, site, config) {
 
   const rteInp = el('input', { type: 'number', min: 50, max: 100, step: 0.5, value: Math.round(p.roundTripEfficiency * 1000) / 10 });
   const chgInp = el('input', { type: 'number', min: 1, value: p.maxChargeKw ?? (config.maxChargeKw || config.kw) });
+  const arbChk = el('input', { type: 'checkbox' });
+  arbChk.checked = p.arbitrage !== false;
+  const tariff = selectedTariff(site);
 
   const windowsBox = el('div', {});
   const drawWindows = () => {
@@ -110,6 +131,7 @@ function paramsPanel(panel, site, config) {
     if (!(rte > 0.5 && rte <= 1)) { alert('Round-trip efficiency must be 50–100%.'); return; }
     p.roundTripEfficiency = rte;
     p.maxChargeKw = +chgInp.value || null;
+    p.arbitrage = arbChk.checked;
     runSim(site);
     render(panel);
   } }, site.dispatch.results ? 'Re-run simulation' : 'Run simulation');
@@ -124,9 +146,14 @@ function paramsPanel(panel, site, config) {
     el('div', {},
       el('label', { class: 'field' }, 'Round-trip efficiency %:', rteInp),
       el('label', { class: 'field' }, 'Max charge kW:', chgInp),
+      el('label', { class: 'field' }, 'Energy arbitrage (charge off-peak / discharge on-peak):', arbChk),
       runBtn,
     ),
-    el('h3', {}, 'Charge windows (empty = charge any time below target)'),
+    el('p', { class: 'muted', style: 'margin:0 0 8px' },
+      tariff
+        ? `TOU rates from ${tariff.utility} ${tariff.schedule} (tab 4). The battery charges only off-peak and, with arbitrage on, discharges spare energy during on-peak hours to capture the $/kWh spread.`
+        : 'No tariff selected (tab 4) — charging is price-blind. Select a tariff to enable TOU-aware charging and energy arbitrage.'),
+    el('h3', {}, 'Charge windows (optional — further restricts charging hours; empty = any off-peak hour)'),
     windowsBox,
     el('p', { class: 'muted', style: 'margin:8px 0 0' },
       'Peak-aware dispatch: each day the battery reserves its stored energy for that day’s peak, shaving down to ',
@@ -147,7 +174,8 @@ function statsStrip(r) {
   const stat = (v, l, cls = '') => el('div', { class: 'stat' }, el('div', { class: `v ${cls}` }, v), el('div', { class: 'l' }, l));
   return el('div', { class: 'stats', style: 'margin-bottom:12px' },
     stat(fmt.num(r.annual.cycles, 1), 'Annual cycles'),
-    stat(fmt.num(r.annual.dischargeKwh, 0) + ' kWh', 'Discharged'),
+    stat(fmt.num(r.annual.dischargeKwh, 0) + ' kWh', 'Discharged (total)'),
+    stat(fmt.num(r.annual.arbitrageKwh || 0, 0) + ' kWh', 'of which arbitrage'),
     stat(fmt.num(r.annual.lossesKwh, 0) + ' kWh', 'Round-trip losses'),
     stat(String(r.annual.missedEvents), 'Missed-peak events', r.annual.missedEvents ? 'warn' : 'ok'),
     stat(fmt.kw(r.annual.avgRealizedReductionKw), 'Avg realized reduction'),

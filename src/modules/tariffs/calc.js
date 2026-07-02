@@ -103,6 +103,24 @@ export function onPeakDemand(tariff, peakByHour) {
   return max;
 }
 
+/**
+ * Per-month hourly energy rates + the cheapest/priciest tiers, so the dispatch
+ * can charge off-peak and discharge on-peak (energy arbitrage) instead of
+ * being blind to $/kWh.
+ */
+export function monthEnergyRates(tariff, monthKey) {
+  const rateByHour = new Array(24);
+  let minRate = Infinity;
+  let maxRate = -Infinity;
+  for (let h = 0; h < 24; h++) {
+    const r = energyRate(tariff, monthKey, h);
+    rateByHour[h] = r;
+    if (r < minRate) minRate = r;
+    if (r > maxRate) maxRate = r;
+  }
+  return { rateByHour, minRate, maxRate };
+}
+
 /** Apply a ratchet floor to a sequence of monthly peaks (in order). */
 export function applyRatchet(peaks, ratchet) {
   if (!ratchet?.enabled) return peaks.slice();

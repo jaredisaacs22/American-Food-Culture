@@ -24,13 +24,19 @@ export default {
 /** Gather every slice the summary needs; missing pieces stay null. */
 function snapshot(site) {
   const a = site.intervals.analysis;
+  const src = site.intervals.source;
   const config = site.sizing.selectedConfig;
   const dispatch = site.dispatch.results;
   const tariff = getTariffLibrary().find((t) => t.id === site.tariff.selectedId) || null;
   const scenario = site.revenue.scenarios?.selected || 'base';
   const stack = site.revenue.computed?.[scenario] || null;
   const econ = site.economics.results || null;
-  return { a, config, dispatch, tariff, scenario, stack, econ };
+  // Data basis drives how much to trust every number downstream
+  const basis = !src ? null
+    : src.invoice ? { label: `Invoice-calibrated estimate (${src.invoice.entries.length} invoice months, ${src.invoice.typeLabel} shape)`, estimate: true }
+      : src.reference ? { label: `Reference shape (${src.reference.typeLabel}, scaled — no site data)`, estimate: true }
+        : { label: `Metered interval data (${src.fileName})`, estimate: false };
+  return { a, src, basis, config, dispatch, tariff, scenario, stack, econ };
 }
 
 function render(panel) {
@@ -82,6 +88,11 @@ function compositePanel(site, s) {
 
   const blocks = [];
 
+  if (s.basis?.estimate) {
+    blocks.push(el('p', { class: 'warn' },
+      `⚠ Data basis: ${s.basis.label}. All figures below are ESTIMATES — confirm with the customer’s interval data before contracting.`));
+  }
+
   blocks.push(el('div', { class: 'stats', style: 'margin-bottom:10px' },
     stat(fmt.kw(s.a.overall.peakKw), 'Peak demand'),
     stat(fmt.kw(s.a.overall.avgKw), 'Average demand'),
@@ -98,6 +109,7 @@ function compositePanel(site, s) {
 
   const row = (k, v) => el('tr', {}, el('td', {}, k), el('td', {}, v));
   const table = el('table', { class: 'data', style: 'max-width:720px' });
+  if (s.basis) table.append(row('Data basis', s.basis.label));
   if (s.dispatch) {
     table.append(
       row('Annual cycles', fmt.num(s.dispatch.annual.cycles, 1)),
@@ -233,6 +245,7 @@ function exportPdf(site, s) {
   kv('Address', site.meta.address || '—');
   kv('Utility', site.meta.utility || '—');
   kv('Peak / average demand', `${Math.round(s.a.overall.peakKw)} kW / ${Math.round(s.a.overall.avgKw)} kW (LF ${(s.a.overall.loadFactor * 100).toFixed(0)}%)`);
+  if (s.basis) kv('Data basis', s.basis.label + (s.basis.estimate ? '  ** ESTIMATE **' : ''));
   y += 8;
 
   h2('Recommended Configuration');

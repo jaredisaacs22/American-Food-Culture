@@ -12,6 +12,13 @@ export function profileLibrary() {
   return library;
 }
 
+/** Raw per-unit shape (fractions of annual peak) for a bundled profile. */
+export function profileFractions(stateId, typeId) {
+  const entry = library.profiles[`${stateId}:${typeId}`];
+  if (!entry) throw new Error(`No bundled profile for ${stateId}:${typeId}`);
+  return decodeFractions(entry.data);
+}
+
 /** base64 LE uint16 -> Float64Array of fractions (0..1 of annual peak). */
 function decodeFractions(b64) {
   const bin = atob(b64);

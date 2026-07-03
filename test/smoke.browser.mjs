@@ -31,10 +31,11 @@ if (!libs.chart || !libs.xlsx || !libs.jspdf || !libs.roboto) throw new Error('v
 const tab = (id) => page.click(`nav.tabs button[data-tab="${id}"]`);
 
 // --- Tab 1: reference building profile (NREL ComStock) ---
-await page.selectOption('section[data-tab="intervals"] select >> nth=0', 'NY');
-await page.selectOption('section[data-tab="intervals"] select >> nth=1', 'largeoffice');
-await page.fill('section[data-tab="intervals"] input[type=number]', '1500');
-await page.click('section[data-tab="intervals"] button:has-text("Load reference profile")');
+const refPanel = 'section[data-tab="intervals"] .panel:has(h2:has-text("Reference Building Profile"))';
+await page.selectOption(`${refPanel} select >> nth=0`, 'NY');
+await page.selectOption(`${refPanel} select >> nth=1`, 'largeoffice');
+await page.fill(`${refPanel} input[type=number]`, '1500');
+await page.click(`${refPanel} button:has-text("Load reference profile")`);
 await page.waitForSelector('table.heatmap', { timeout: 20000 });
 const refDetect = await page.$eval('section[data-tab="intervals"]', (e) => e.textContent);
 if (!refDetect.includes('ComStock')) throw new Error('reference profile source note missing');
@@ -43,8 +44,35 @@ const refPeak = await page.$$eval('section[data-tab="intervals"] .stat', (els) =
 if (!/1,?500/.test(refPeak || '')) throw new Error(`reference profile not scaled to 1500 kW peak: ${refPeak}`);
 console.log('tab 1: reference profile loaded (NY large office @ 1500 kW) —', refPeak);
 
+// --- Tab 1: invoice-first mode (3 invoices -> calibrated year) ---
+{
+  const invPanel = 'section[data-tab="intervals"] .panel:has(h2:has-text("Monthly Invoices"))';
+  await page.selectOption(`${invPanel} select >> nth=0`, 'NJ');
+  await page.selectOption(`${invPanel} select >> nth=1`, 'warehouse');
+  // Jan, Jul, Oct invoices: kWh + billed kW
+  const fill = async (monthIdx, kwh, pk) => {
+    await page.fill(`${invPanel} table.data input >> nth=${monthIdx * 2}`, String(kwh));
+    await page.fill(`${invPanel} table.data input >> nth=${monthIdx * 2 + 1}`, String(pk));
+  };
+  await fill(0, 80000, 380);  // Jan
+  await fill(6, 120000, 520); // Jul
+  await fill(9, 90000, 400);  // Oct
+  await page.click(`${invPanel} button:has-text("Build estimate from invoices")`);
+  await page.waitForSelector('table.heatmap', { timeout: 20000 });
+  const invText = await page.$eval('section[data-tab="intervals"]', (e) => e.textContent);
+  if (!invText.includes('Invoice Calibration')) throw new Error('invoice calibration panel missing');
+  if (!/inferred/i.test(invText)) throw new Error('inferred-month flags missing');
+  const invPeak = await page.$$eval('section[data-tab="intervals"] .stat', (els) =>
+    els.map((e) => e.textContent).find((t) => /peak demand/i.test(t)));
+  if (!/520/.test(invPeak || '')) throw new Error(`invoice-calibrated peak wrong: ${invPeak}`);
+  console.log('tab 1: invoice mode calibrated (3 invoices, peak 520 kW) —', invPeak);
+}
+
 // --- Tab 1: upload XLSX (multi-sheet, real date serials), then the CSV ---
 await page.setInputFiles('section[data-tab="intervals"] input[type=file]', 'sample-data/generic_15min_kw.xlsx');
+await page.waitForFunction(() =>
+  [...document.querySelectorAll('section[data-tab="intervals"] td')]
+    .some((td) => td.textContent.includes('generic_15min_kw.xlsx')), { timeout: 30000 });
 await page.waitForSelector('table.heatmap', { timeout: 30000 });
 const detection = await page.$eval('section[data-tab="intervals"]', (e) => e.textContent);
 if (!detection.includes('used "Interval Data"')) throw new Error('xlsx multi-sheet note missing from detection summary');

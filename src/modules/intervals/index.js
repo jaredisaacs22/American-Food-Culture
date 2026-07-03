@@ -9,6 +9,7 @@ import { parseCsv, parseIntervalRows, detectLayout, extractRecords } from './par
 import { analyzeIntervals, worstDayProfile } from './analysis.js';
 import { renderDurationCurve, renderMonthlyPeaks, renderDayProfile } from './charts.js';
 import { profileLibrary, loadReferenceProfile } from './profiles.js';
+import { calibrateFromInvoices } from './invoice.js';
 
 let lastRows = null; // raw parsed rows kept module-local for re-processing with overrides
 let lastFileName = '';
@@ -29,9 +30,11 @@ function render(panel) {
   const site = getSite();
 
   panel.append(uploadPanel(panel));
+  panel.append(invoicePanel(panel));
   panel.append(referencePanel(panel));
 
   if (site.intervals.source) panel.append(detectionPanel(panel));
+  if (site.intervals.source?.invoice) panel.append(calibrationPanel(site.intervals.source.invoice));
 
   if (site.intervals.normalized) {
     if (!site.intervals.analysis) {
@@ -99,6 +102,103 @@ function downloadTemplate() {
   }
   lines.push('# … continue for a full year (35,040 rows at 15-min). Keep either kW, kWh, or both columns.');
   downloadFile('interval-data-template.csv', lines.join('\n'), 'text/csv');
+}
+
+// ---------------------------------------------------------------------------
+// Invoice-first mode: calibrate a reference shape to the customer's invoices
+// ---------------------------------------------------------------------------
+
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+function invoicePanel(panel) {
+  const lib = profileLibrary();
+  const prev = getSite().intervals.source?.invoice; // repopulate after load/re-render
+
+  const stateSel = el('select', {}, ...lib.states.map((s) => {
+    const o = el('option', { value: s }, s);
+    if (prev && s === prev.stateId) o.selected = true;
+    return o;
+  }));
+  const typeSel = el('select', {}, ...lib.buildingTypes.map((t) => {
+    const o = el('option', { value: t.id }, t.label);
+    if (prev && t.id === prev.typeId) o.selected = true;
+    return o;
+  }));
+
+  const kwhInputs = [];
+  const pkInputs = [];
+  const prevByMonth = new Map((prev?.entries || []).map((e) => [e.month, e]));
+  const rows = MONTH_NAMES.map((name, idx) => {
+    const pe = prevByMonth.get(idx + 1);
+    const kwhIn = el('input', { type: 'number', min: 0, step: 100, style: 'width:110px', value: pe?.kwh ?? '' });
+    const pkIn = el('input', { type: 'number', min: 0, step: 5, style: 'width:90px', value: pe?.peakKw ?? '' });
+    kwhInputs.push(kwhIn);
+    pkInputs.push(pkIn);
+    return el('tr', {}, el('td', {}, name), el('td', {}, kwhIn), el('td', {}, pkIn));
+  });
+  // Two-column month grid: Jan–Jun | Jul–Dec
+  const mkTable = (rs) => el('table', { class: 'data', style: 'max-width:340px' },
+    el('tr', {}, ...['Month', 'kWh', 'Billed kW'].map((h) => el('th', {}, h))), ...rs);
+
+  const loadBtn = el('button', { class: 'action', onclick: () => {
+    const entries = [];
+    for (let m = 0; m < 12; m++) {
+      const kwh = +kwhInputs[m].value;
+      const peakKw = +pkInputs[m].value;
+      if (kwh > 0) entries.push({ month: m + 1, kwh, peakKw: peakKw > 0 ? peakKw : undefined });
+    }
+    if (!entries.length) { alert('Enter kWh (and ideally billed kW) for at least one invoice month.'); return; }
+    try {
+      const { normalized, source } = calibrateFromInvoices(stateSel.value, typeSel.value, entries);
+      const site = getSite();
+      lastRows = null; lastFileName = '';
+      site.intervals.normalized = normalized;
+      site.intervals.source = source;
+      site.intervals.analysis = analyzeIntervals(normalized);
+      notify({ intervals: true });
+      render(panel);
+    } catch (err) {
+      alert(`Could not calibrate from invoices: ${err.message}`);
+    }
+  } }, 'Build estimate from invoices');
+
+  return el('div', { class: 'panel' },
+    el('h2', {}, 'Or Estimate From Monthly Invoices ',
+      el('span', { class: 'placeholder-tag' }, 'ESTIMATE')),
+    el('p', { class: 'muted' },
+      'Have utility bills but no interval data? Enter each invoice month’s ', el('b', {}, 'kWh'),
+      ' and ', el('b', {}, 'billed kW'), ' (any months you have — more is better). ',
+      'The matching NREL building shape is calibrated so every entered month reproduces its invoice exactly; ',
+      'missing months are inferred and flagged.'),
+    el('div', {},
+      el('label', { class: 'field' }, 'State:', stateSel),
+      el('label', { class: 'field' }, 'Building type:', typeSel),
+    ),
+    el('div', { class: 'row', style: 'margin-top:6px' },
+      el('div', {}, mkTable(rows.slice(0, 6))),
+      el('div', {}, mkTable(rows.slice(6))),
+    ),
+    el('div', { style: 'margin-top:8px' }, loadBtn),
+  );
+}
+
+function calibrationPanel(inv) {
+  const header = el('tr', {}, ...['Month', 'Source', 'kWh (invoice → model)', 'Peak kW (invoice → model)'].map((h) => el('th', {}, h)));
+  const rows = inv.calibration.map((c) => el('tr', {},
+    el('td', {}, MONTH_NAMES[c.month - 1]),
+    el('td', {}, c.measured
+      ? el('span', { class: 'ok' }, c.peakMeasured ? 'invoice' : 'invoice (kW inferred)')
+      : el('span', { class: 'warn' }, 'inferred')),
+    el('td', {}, `${c.kwhIn.toLocaleString()} → ${c.kwhOut.toLocaleString()}`),
+    el('td', {}, `${Math.round(c.peakIn).toLocaleString()} → ${Math.round(c.peakOut).toLocaleString()}`),
+  ));
+  return el('div', { class: 'panel' },
+    el('h2', {}, 'Invoice Calibration ', el('span', { class: 'placeholder-tag' }, 'ESTIMATE — CONFIRM WITH INTERVAL DATA')),
+    el('table', { class: 'data', style: 'max-width:760px' }, header, ...rows),
+    el('p', { class: 'muted' },
+      'Entered months match their invoices exactly; inferred months use the provided months’ ratio to the reference shape. ',
+      'Peak duration (which drives battery energy sizing) comes from the shape, not the invoice — treat downstream savings as an estimate.'),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -228,7 +328,7 @@ function process(rows, fileName, panel, overrides, extraNotes = []) {
 
 function detectionPanel(panel) {
   const s = getSite().intervals.source;
-  const isReference = !!(s.reference);
+  const isReference = !!(s.reference || s.invoice); // synthetic sources have no file to re-process
   const gapPct = s.gapsFilled / (s.gapsFilled + s.rowsParsed || 1);
   const cov = s.coverage;
 

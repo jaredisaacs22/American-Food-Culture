@@ -1671,6 +1671,11 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
   function profileLibrary() {
     return building_profiles_default;
   }
+  function profileFractions(stateId, typeId) {
+    const entry = building_profiles_default.profiles[`${stateId}:${typeId}`];
+    if (!entry) throw new Error(`No bundled profile for ${stateId}:${typeId}`);
+    return decodeFractions(entry.data);
+  }
   function decodeFractions(b64) {
     const bin = atob(b64);
     const n = bin.length / 2;
@@ -1746,6 +1751,183 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     };
   }
 
+  // src/modules/intervals/invoice.js
+  var STEP_MIN3 = 15;
+  var STEP_HOURS3 = 0.25;
+  var STEP_MS3 = STEP_MIN3 * 6e4;
+  function monthShapeStats(frac, year) {
+    const startMs = new Date(year, 0, 1).getTime();
+    const months = [];
+    let cur = null;
+    for (let i = 0; i < frac.length; i++) {
+      const m = new Date(startMs + i * STEP_MS3).getMonth();
+      if (!cur || cur.month !== m + 1) {
+        cur = { month: m + 1, start: i, end: i + 1, maxS: frac[i], sumS: frac[i] };
+        months.push(cur);
+      } else {
+        cur.end = i + 1;
+        cur.sumS += frac[i];
+        if (frac[i] > cur.maxS) cur.maxS = frac[i];
+      }
+    }
+    for (const m of months) {
+      m.n = m.end - m.start;
+      m.meanS = m.sumS / m.n;
+    }
+    return { startMs, months };
+  }
+  function solveFloorAndEnergy(frac, start, end, a, targetKwh) {
+    const energyAt = (b) => {
+      let sum = 0;
+      for (let i = start; i < end; i++) sum += Math.max(0, a * frac[i] + b);
+      return sum * STEP_HOURS3;
+    };
+    let lo = -a;
+    let hi = targetKwh / ((end - start) * STEP_HOURS3);
+    for (let it = 0; it < 60; it++) {
+      const mid = (lo + hi) / 2;
+      if (energyAt(mid) < targetKwh) lo = mid;
+      else hi = mid;
+    }
+    return hi;
+  }
+  function calibrateFromInvoices(stateId, typeId, entries) {
+    const lib = profileLibrary();
+    const frac = profileFractions(stateId, typeId);
+    const year = lib.meta.weatherYear;
+    const { startMs, months } = monthShapeStats(frac, year);
+    const provided = /* @__PURE__ */ new Map();
+    for (const e of entries || []) {
+      if (!e || !(e.month >= 1 && e.month <= 12)) continue;
+      if (!(e.kwh > 0)) continue;
+      provided.set(e.month, { kwh: e.kwh, peakKw: e.peakKw > 0 ? e.peakKw : null });
+    }
+    if (!provided.size) throw new Error("Enter at least one month with kWh from an invoice.");
+    const energyRatios = [];
+    const peakRatios = [];
+    for (const m of months) {
+      const inv = provided.get(m.month);
+      if (!inv) continue;
+      energyRatios.push(inv.kwh / (m.sumS * STEP_HOURS3));
+      if (inv.peakKw) peakRatios.push(inv.peakKw / m.maxS);
+    }
+    const median = (arr) => {
+      const s = [...arr].sort((x, y) => x - y);
+      return s[Math.floor(s.length / 2)];
+    };
+    const medianEnergyRatio = median(energyRatios);
+    const medianPeakRatio = peakRatios.length ? median(peakRatios) : medianEnergyRatio;
+    const kw = new Array(frac.length).fill(0);
+    const calibration = [];
+    const notes = [];
+    for (const m of months) {
+      const inv = provided.get(m.month);
+      const measured = !!inv;
+      const E = inv ? inv.kwh : medianEnergyRatio * m.sumS * STEP_HOURS3;
+      let P = inv && inv.peakKw ? inv.peakKw : medianPeakRatio * m.maxS;
+      const peakMeasured = !!(inv && inv.peakKw);
+      const A = E / (m.n * STEP_HOURS3);
+      if (P <= A) {
+        if (peakMeasured) {
+          throw new Error(
+            `Month ${m.month}: billed peak ${P.toFixed(0)} kW is at or below the average implied by ${E.toLocaleString()} kWh (${A.toFixed(0)} kW). Check the units on that invoice.`
+          );
+        }
+        P = A * 1.05;
+      }
+      let a = m.maxS - m.meanS > 1e-9 ? (P - A) / (m.maxS - m.meanS) : 0;
+      let b = A - a * m.meanS;
+      let minVal = Infinity;
+      for (let i = m.start; i < m.end; i++) {
+        const v = a * frac[i] + b;
+        if (v < minVal) minVal = v;
+      }
+      let floored = false;
+      if (minVal < 0) {
+        floored = true;
+        for (let iter = 0; iter < 30; iter++) {
+          b = solveFloorAndEnergy(frac, m.start, m.end, a, E);
+          const peakNow = a * m.maxS + b;
+          if (Math.abs(peakNow - P) < P * 1e-6) break;
+          a = (P - b) / m.maxS;
+        }
+        b = solveFloorAndEnergy(frac, m.start, m.end, a, E);
+      }
+      for (let i = m.start; i < m.end; i++) {
+        kw[i] = Math.round(Math.max(0, a * frac[i] + b) * 1e3) / 1e3;
+      }
+      let outPeak = 0;
+      let outSum = 0;
+      for (let i = m.start; i < m.end; i++) {
+        if (kw[i] > outPeak) outPeak = kw[i];
+        outSum += kw[i];
+      }
+      calibration.push({
+        month: m.month,
+        measured,
+        peakMeasured,
+        kwhIn: Math.round(E),
+        peakIn: Math.round(P * 10) / 10,
+        kwhOut: Math.round(outSum * STEP_HOURS3),
+        peakOut: Math.round(outPeak * 10) / 10,
+        floored
+      });
+    }
+    const inferredMonths = calibration.filter((c) => !c.measured).map((c) => c.month);
+    if (inferredMonths.length) {
+      notes.push(`Months ${inferredMonths.join(", ")} had no invoice \u2014 INFERRED from the provided months' ratio to the reference shape. More invoices = better estimate.`);
+    }
+    const inferredPeaks = calibration.filter((c) => c.measured && !c.peakMeasured).map((c) => c.month);
+    if (inferredPeaks.length) {
+      notes.push(`Months ${inferredPeaks.join(", ")} had kWh but no billed kW \u2014 peak inferred from the shape's load factor.`);
+    }
+    notes.push("Invoice-calibrated estimate: monthly peaks/energies match the invoices exactly, but peak DURATION comes from the reference shape \u2014 battery energy sizing depends on it. Treat savings as an estimate and confirm with interval data before contracting.");
+    const typeLabel = lib.buildingTypes.find((t) => t.id === typeId)?.label || typeId;
+    const totalKwh = Math.round(kw.reduce((s, v) => s + v, 0) * STEP_HOURS3);
+    const peakKw = Math.max(...kw);
+    return {
+      normalized: {
+        startMs,
+        stepMin: STEP_MIN3,
+        kw,
+        gapsFilled: 0,
+        longestGapIntervals: 0,
+        duplicatesMerged: 0
+      },
+      source: {
+        fileName: `${typeLabel} \u2014 ${stateId}, calibrated to ${provided.size} invoice month${provided.size > 1 ? "s" : ""}`,
+        format: "invoice-calibrated estimate (ComStock shape fitted to invoice months)",
+        fidelity: "invoice",
+        detectedIntervalMin: STEP_MIN3,
+        detectedUnit: "kW",
+        appliedIntervalMin: STEP_MIN3,
+        appliedUnit: "kW",
+        rowsParsed: kw.length,
+        gapsFilled: 0,
+        longestGapIntervals: 0,
+        duplicatesMerged: 0,
+        coverage: {
+          startMs,
+          endMs: startMs + (kw.length - 1) * STEP_MS3,
+          intervals: kw.length,
+          days: Math.round(kw.length / 96 * 10) / 10,
+          isFullYear: true,
+          nativeStepMin: STEP_MIN3
+        },
+        invoice: {
+          stateId,
+          typeId,
+          typeLabel,
+          entries: [...provided.entries()].map(([month, v]) => ({ month, kwh: v.kwh, peakKw: v.peakKw })),
+          calibration,
+          impliedAnnualKwh: totalKwh,
+          impliedPeakKw: Math.round(peakKw)
+        },
+        notes
+      }
+    };
+  }
+
   // src/modules/intervals/index.js
   var lastRows = null;
   var lastFileName = "";
@@ -1767,8 +1949,10 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     clear(panel);
     const site = getSite();
     panel.append(uploadPanel(panel));
+    panel.append(invoicePanel(panel));
     panel.append(referencePanel(panel));
     if (site.intervals.source) panel.append(detectionPanel(panel));
+    if (site.intervals.source?.invoice) panel.append(calibrationPanel(site.intervals.source.invoice));
     if (site.intervals.normalized) {
       if (!site.intervals.analysis) {
         site.intervals.analysis = analyzeIntervals(site.intervals.normalized);
@@ -1845,6 +2029,120 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     }
     lines.push("# \u2026 continue for a full year (35,040 rows at 15-min). Keep either kW, kWh, or both columns.");
     downloadFile("interval-data-template.csv", lines.join("\n"), "text/csv");
+  }
+  var MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  function invoicePanel(panel) {
+    const lib = profileLibrary();
+    const prev = getSite().intervals.source?.invoice;
+    const stateSel = el("select", {}, ...lib.states.map((s) => {
+      const o = el("option", { value: s }, s);
+      if (prev && s === prev.stateId) o.selected = true;
+      return o;
+    }));
+    const typeSel = el("select", {}, ...lib.buildingTypes.map((t) => {
+      const o = el("option", { value: t.id }, t.label);
+      if (prev && t.id === prev.typeId) o.selected = true;
+      return o;
+    }));
+    const kwhInputs = [];
+    const pkInputs = [];
+    const prevByMonth = new Map((prev?.entries || []).map((e) => [e.month, e]));
+    const rows = MONTH_NAMES.map((name, idx) => {
+      const pe = prevByMonth.get(idx + 1);
+      const kwhIn = el("input", { type: "number", min: 0, step: 100, style: "width:110px", value: pe?.kwh ?? "" });
+      const pkIn = el("input", { type: "number", min: 0, step: 5, style: "width:90px", value: pe?.peakKw ?? "" });
+      kwhInputs.push(kwhIn);
+      pkInputs.push(pkIn);
+      return el("tr", {}, el("td", {}, name), el("td", {}, kwhIn), el("td", {}, pkIn));
+    });
+    const mkTable = (rs) => el(
+      "table",
+      { class: "data", style: "max-width:340px" },
+      el("tr", {}, ...["Month", "kWh", "Billed kW"].map((h) => el("th", {}, h))),
+      ...rs
+    );
+    const loadBtn = el("button", { class: "action", onclick: () => {
+      const entries = [];
+      for (let m = 0; m < 12; m++) {
+        const kwh = +kwhInputs[m].value;
+        const peakKw = +pkInputs[m].value;
+        if (kwh > 0) entries.push({ month: m + 1, kwh, peakKw: peakKw > 0 ? peakKw : void 0 });
+      }
+      if (!entries.length) {
+        alert("Enter kWh (and ideally billed kW) for at least one invoice month.");
+        return;
+      }
+      try {
+        const { normalized, source } = calibrateFromInvoices(stateSel.value, typeSel.value, entries);
+        const site = getSite();
+        lastRows = null;
+        lastFileName = "";
+        site.intervals.normalized = normalized;
+        site.intervals.source = source;
+        site.intervals.analysis = analyzeIntervals(normalized);
+        notify({ intervals: true });
+        render(panel);
+      } catch (err) {
+        alert(`Could not calibrate from invoices: ${err.message}`);
+      }
+    } }, "Build estimate from invoices");
+    return el(
+      "div",
+      { class: "panel" },
+      el(
+        "h2",
+        {},
+        "Or Estimate From Monthly Invoices ",
+        el("span", { class: "placeholder-tag" }, "ESTIMATE")
+      ),
+      el(
+        "p",
+        { class: "muted" },
+        "Have utility bills but no interval data? Enter each invoice month\u2019s ",
+        el("b", {}, "kWh"),
+        " and ",
+        el("b", {}, "billed kW"),
+        " (any months you have \u2014 more is better). ",
+        "The matching NREL building shape is calibrated so every entered month reproduces its invoice exactly; ",
+        "missing months are inferred and flagged."
+      ),
+      el(
+        "div",
+        {},
+        el("label", { class: "field" }, "State:", stateSel),
+        el("label", { class: "field" }, "Building type:", typeSel)
+      ),
+      el(
+        "div",
+        { class: "row", style: "margin-top:6px" },
+        el("div", {}, mkTable(rows.slice(0, 6))),
+        el("div", {}, mkTable(rows.slice(6)))
+      ),
+      el("div", { style: "margin-top:8px" }, loadBtn)
+    );
+  }
+  function calibrationPanel(inv) {
+    const header = el("tr", {}, ...["Month", "Source", "kWh (invoice \u2192 model)", "Peak kW (invoice \u2192 model)"].map((h) => el("th", {}, h)));
+    const rows = inv.calibration.map((c) => el(
+      "tr",
+      {},
+      el("td", {}, MONTH_NAMES[c.month - 1]),
+      el("td", {}, c.measured ? el("span", { class: "ok" }, c.peakMeasured ? "invoice" : "invoice (kW inferred)") : el("span", { class: "warn" }, "inferred")),
+      el("td", {}, `${c.kwhIn.toLocaleString()} \u2192 ${c.kwhOut.toLocaleString()}`),
+      el("td", {}, `${Math.round(c.peakIn).toLocaleString()} \u2192 ${Math.round(c.peakOut).toLocaleString()}`)
+    ));
+    return el(
+      "div",
+      { class: "panel" },
+      el("h2", {}, "Invoice Calibration ", el("span", { class: "placeholder-tag" }, "ESTIMATE \u2014 CONFIRM WITH INTERVAL DATA")),
+      el("table", { class: "data", style: "max-width:760px" }, header, ...rows),
+      el(
+        "p",
+        { class: "muted" },
+        "Entered months match their invoices exactly; inferred months use the provided months\u2019 ratio to the reference shape. ",
+        "Peak duration (which drives battery energy sizing) comes from the shape, not the invoice \u2014 treat downstream savings as an estimate."
+      )
+    );
   }
   function referencePanel(panel) {
     const lib = profileLibrary();
@@ -1972,7 +2270,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
   }
   function detectionPanel(panel) {
     const s = getSite().intervals.source;
-    const isReference = !!s.reference;
+    const isReference = !!(s.reference || s.invoice);
     const gapPct = s.gapsFilled / (s.gapsFilled + s.rowsParsed || 1);
     const cov = s.coverage;
     const chip = (ok, okText, badText) => el("span", { class: ok ? "check-ok" : "check-warn" }, (ok ? "\u2713 " : "\u26A0 ") + (ok ? okText : badText));
@@ -2236,7 +2534,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
   }
 
   // src/modules/sizing/calc.js
-  var STEP_HOURS3 = 0.25;
+  var STEP_HOURS4 = 0.25;
   function theoreticalRequirement(normalized, analysis, targetShavePct) {
     const { peakKw, avgKw } = analysis.overall;
     const shaveKw = Math.max(0, (peakKw - avgKw) * (targetShavePct / 100));
@@ -2261,7 +2559,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
   }
   function energyAbove(kwArr, level) {
     let e = 0;
-    for (const v of kwArr) if (v > level) e += (v - level) * STEP_HOURS3;
+    for (const v of kwArr) if (v > level) e += (v - level) * STEP_HOURS4;
     return e;
   }
   function achievableLevel(kwArr, configKw, configKwh) {
@@ -2826,8 +3124,8 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
   }
 
   // src/modules/dispatch/calc.js
-  var STEP_HOURS4 = 0.25;
-  var STEP_MS3 = 15 * 6e4;
+  var STEP_HOURS5 = 0.25;
+  var STEP_MS4 = 15 * 6e4;
   function hourInWindows(h, windows) {
     if (!windows || !windows.length) return true;
     return windows.some((w) => w.startHour <= w.endHour ? h >= w.startHour && h < w.endHour : h >= w.startHour || h < w.endHour);
@@ -2887,7 +3185,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     const dayFloorFullArr = new Float64Array(dayRanges.length);
     for (let di = 0; di < dayRanges.length; di++) {
       const r = dayRanges[di];
-      const mk = monthKeyOf(new Date(startMs + r.start * STEP_MS3));
+      const mk = monthKeyOf(new Date(startMs + r.start * STEP_MS4));
       const target = targets.get(mk) ?? 0;
       const dayFloorFull = Math.max(target, achievableLevel(kw.slice(r.start, r.end), config.kw, config.kwh));
       dayFloorFullArr[di] = dayFloorFull;
@@ -2895,7 +3193,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       if (cur === void 0 || dayFloorFull > cur) monthBillingLevel.set(mk, dayFloorFull);
     }
     const refillPotentialAt = (k) => {
-      const kd = new Date(startMs + k * STEP_MS3);
+      const kd = new Date(startMs + k * STEP_MS4);
       const kMk = monthKeyOf(kd);
       const kTarget = targets.get(kMk) ?? 0;
       if (kw[k] >= kTarget - 1e-9 || !hourInWindows(kd.getHours(), windows)) return 0;
@@ -2904,7 +3202,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         const kRate = kInfo.rateByHour[kd.getHours()];
         if (kRate >= kInfo.maxRate - 1e-9 && kInfo.maxRate > kInfo.minRate + 1e-12) return 0;
       }
-      return Math.min(chargeCap, kTarget - kw[k]) * STEP_HOURS4 * eff;
+      return Math.min(chargeCap, kTarget - kw[k]) * STEP_HOURS5 * eff;
     };
     const dayNeed = new Float64Array(dayRanges.length);
     const dayRefillCycle = new Float64Array(dayRanges.length);
@@ -2912,7 +3210,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
       let prevBoundary = -1;
       for (let di = 0; di < dayRanges.length; di++) {
         const r = dayRanges[di];
-        const mk = monthKeyOf(new Date(startMs + r.start * STEP_MS3));
+        const mk = monthKeyOf(new Date(startMs + r.start * STEP_MS4));
         const held = Math.max(monthBillingLevel.get(mk) ?? 0, dayFloorFullArr[di]);
         dayNeed[di] = energyAbove(kw.slice(r.start, r.end), held);
         let lastDraw = -1;
@@ -2943,7 +3241,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     const months = /* @__PURE__ */ new Map();
     let dayPtr = 0;
     for (let i = 0; i < n; i++) {
-      const d = new Date(startMs + i * STEP_MS3);
+      const d = new Date(startMs + i * STEP_MS4);
       const mk = monthKeyOf(d);
       let rec = months.get(mk);
       if (!rec) {
@@ -2962,7 +3260,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         floorSocBasis = soc;
         reserveAfter = new Float64Array(day.length + 1);
         for (let k = day.length - 1; k >= 0; k--) {
-          reserveAfter[k] = reserveAfter[k + 1] + Math.max(0, day[k] - dischargeFloor) * STEP_HOURS4;
+          reserveAfter[k] = reserveAfter[k + 1] + Math.max(0, day[k] - dischargeFloor) * STEP_HOURS5;
         }
         dayStartIdx = ds;
         let required = 0;
@@ -2990,41 +3288,41 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
         if (newFloor < dischargeFloor - 1e-9) {
           dischargeFloor = newFloor;
           for (let k = dayEndIdx - 1; k >= i; k--) {
-            reserveAfter[k - dayStartIdx] = reserveAfter[k - dayStartIdx + 1] + Math.max(0, kw[k] - dischargeFloor) * STEP_HOURS4;
+            reserveAfter[k - dayStartIdx] = reserveAfter[k - dayStartIdx + 1] + Math.max(0, kw[k] - dischargeFloor) * STEP_HOURS5;
           }
         }
         floorSocBasis = soc;
       }
       if (load > dischargeFloor + 1e-9) {
         const want = load - dischargeFloor;
-        const discharge = Math.min(want, config.kw, soc / STEP_HOURS4);
-        soc -= discharge * STEP_HOURS4;
+        const discharge = Math.min(want, config.kw, soc / STEP_HOURS5);
+        soc -= discharge * STEP_HOURS5;
         served = load - discharge;
-        totalDischarge += discharge * STEP_HOURS4;
-        rec.dischargeKwh += discharge * STEP_HOURS4;
-        rec.dischargeByHour[h] += discharge * STEP_HOURS4;
+        totalDischarge += discharge * STEP_HOURS5;
+        rec.dischargeKwh += discharge * STEP_HOURS5;
+        rec.dischargeByHour[h] += discharge * STEP_HOURS5;
       } else if (tariff && arbitrageOn && arbitrageWorthwhile && isOnPeak && load > 1e-9) {
         const reservedKwh = reserveAfter[i - dayStartIdx + 1] + maxCarryKwh + 0.02 * config.kwh;
         const surplus = soc - reservedKwh;
-        const arb = Math.max(0, Math.min(load, config.kw, surplus / STEP_HOURS4));
+        const arb = Math.max(0, Math.min(load, config.kw, surplus / STEP_HOURS5));
         if (arb > 1e-9) {
-          soc -= arb * STEP_HOURS4;
+          soc -= arb * STEP_HOURS5;
           served = load - arb;
-          totalDischarge += arb * STEP_HOURS4;
-          totalArbitrageKwh += arb * STEP_HOURS4;
-          rec.dischargeKwh += arb * STEP_HOURS4;
-          rec.dischargeByHour[h] += arb * STEP_HOURS4;
+          totalDischarge += arb * STEP_HOURS5;
+          totalArbitrageKwh += arb * STEP_HOURS5;
+          rec.dischargeKwh += arb * STEP_HOURS5;
+          rec.dischargeByHour[h] += arb * STEP_HOURS5;
         }
       } else if (load < target - 1e-9 && soc < config.kwh - 1e-9 && chargeGateOK) {
         const headroom = target - load;
-        const roomKw = (config.kwh - soc) / (STEP_HOURS4 * eff);
+        const roomKw = (config.kwh - soc) / (STEP_HOURS5 * eff);
         const charge = Math.max(0, Math.min(chargeCap, headroom, roomKw));
         if (charge > 0) {
-          soc += charge * STEP_HOURS4 * eff;
+          soc += charge * STEP_HOURS5 * eff;
           served = load + charge;
-          totalChargeGrid += charge * STEP_HOURS4;
-          rec.chargeKwh += charge * STEP_HOURS4;
-          rec.chargeByHour[h] += charge * STEP_HOURS4;
+          totalChargeGrid += charge * STEP_HOURS5;
+          rec.chargeKwh += charge * STEP_HOURS5;
+          rec.chargeByHour[h] += charge * STEP_HOURS5;
         }
       }
       if (served > target + 1e-6) {
@@ -3075,7 +3373,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     let start = 0;
     let curKey = dayKeyOf(new Date(startMs));
     for (let i = 1; i < n; i++) {
-      const key = dayKeyOf(new Date(startMs + i * STEP_MS3));
+      const key = dayKeyOf(new Date(startMs + i * STEP_MS4));
       if (key !== curKey) {
         ranges.push({ start, end: i });
         start = i;
@@ -9398,13 +9696,15 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
   };
   function snapshot(site) {
     const a = site.intervals.analysis;
+    const src = site.intervals.source;
     const config = site.sizing.selectedConfig;
     const dispatch = site.dispatch.results;
     const tariff = getTariffLibrary().find((t) => t.id === site.tariff.selectedId) || null;
     const scenario = site.revenue.scenarios?.selected || "base";
     const stack = site.revenue.computed?.[scenario] || null;
     const econ = site.economics.results || null;
-    return { a, config, dispatch, tariff, scenario, stack, econ };
+    const basis = !src ? null : src.invoice ? { label: `Invoice-calibrated estimate (${src.invoice.entries.length} invoice months, ${src.invoice.typeLabel} shape)`, estimate: true } : src.reference ? { label: `Reference shape (${src.reference.typeLabel}, scaled \u2014 no site data)`, estimate: true } : { label: `Metered interval data (${src.fileName})`, estimate: false };
+    return { a, src, basis, config, dispatch, tariff, scenario, stack, econ };
   }
   function render7(panel) {
     clear(panel);
@@ -9450,6 +9750,13 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     const stat = (v, l, cls = "") => el("div", { class: "stat" }, el("div", { class: `v ${cls}` }, v), el("div", { class: "l" }, l));
     const missing = (what, tab) => el("div", { class: "warn" }, `\u26A0 ${what} missing \u2014 complete tab ${tab}.`);
     const blocks = [];
+    if (s.basis?.estimate) {
+      blocks.push(el(
+        "p",
+        { class: "warn" },
+        `\u26A0 Data basis: ${s.basis.label}. All figures below are ESTIMATES \u2014 confirm with the customer\u2019s interval data before contracting.`
+      ));
+    }
     blocks.push(el(
       "div",
       { class: "stats", style: "margin-bottom:10px" },
@@ -9466,6 +9773,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     if (!s.econ) blocks.push(missing("Deal economics", "6"));
     const row = (k, v) => el("tr", {}, el("td", {}, k), el("td", {}, v));
     const table = el("table", { class: "data", style: "max-width:720px" });
+    if (s.basis) table.append(row("Data basis", s.basis.label));
     if (s.dispatch) {
       table.append(
         row("Annual cycles", fmt.num(s.dispatch.annual.cycles, 1)),
@@ -9606,6 +9914,7 @@ window.ROBOTO_BOLD_B64 = "AAEAAAASAQAABAAgR0RFRmnPZ04AAAOQAAAB5kdQT1Ohc8aOAABD0A
     kv("Address", site.meta.address || "\u2014");
     kv("Utility", site.meta.utility || "\u2014");
     kv("Peak / average demand", `${Math.round(s.a.overall.peakKw)} kW / ${Math.round(s.a.overall.avgKw)} kW (LF ${(s.a.overall.loadFactor * 100).toFixed(0)}%)`);
+    if (s.basis) kv("Data basis", s.basis.label + (s.basis.estimate ? "  ** ESTIMATE **" : ""));
     y += 8;
     h2("Recommended Configuration");
     if (s.config) {
